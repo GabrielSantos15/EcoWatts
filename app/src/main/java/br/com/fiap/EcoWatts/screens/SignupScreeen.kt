@@ -37,9 +37,12 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PinDrop
 import androidx.compose.material.icons.filled.RemoveRedEye
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -62,6 +65,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -266,6 +271,10 @@ fun SignupUserForm(
         return !isNameError && !isEmailError && !isPasswordError
     }
 
+    var showPassword = remember {
+        mutableStateOf(false)
+    }
+
     // val userRepository = RoomUserRepository(LocalContext.current)
 
     Column(
@@ -448,17 +457,22 @@ fun SignupUserForm(
                 )
             },
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.NumberPassword,
+                keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
             ),
             isError = isPasswordError,
             trailingIcon = {
-                if (isPasswordError) {
-                    Icon(imageVector = Icons.Default.Error, contentDescription = stringResource(R.string.hide_password))
+                val image = if (showPassword.value) {
+                    Icons.Default.Visibility
                 } else {
+                    Icons.Default.VisibilityOff
+                }
+                IconButton(
+                    onClick = {showPassword.value = !showPassword.value}
+                ) {
                     Icon(
-                        imageVector = Icons.Default.RemoveRedEye,
-                        contentDescription = stringResource(R.string.show_password),
+                        imageVector = image,
+                        contentDescription = "",
                         tint = MaterialTheme.colorScheme.tertiary
                     )
                 }
@@ -472,7 +486,9 @@ fun SignupUserForm(
                         color = MaterialTheme.colorScheme.error
                     )
                 }
-            }
+            },
+            visualTransformation = if (showPassword.value) VisualTransformation.None
+            else PasswordVisualTransformation()
         )
 
         Spacer(modifier = Modifier.height(32.dp))

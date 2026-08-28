@@ -205,7 +205,7 @@ fun LoginForm(navController: NavController) {
                 }
             },
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.NumberPassword,
+                keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
             ),
             visualTransformation = if (showPassword.value) VisualTransformation.None
