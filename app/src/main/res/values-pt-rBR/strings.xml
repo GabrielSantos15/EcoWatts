@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">EcoWatts</string>
+    <string name="smart_management">Gestão Inteligente</string>
+    <string name="desc_smart_management">Monitore o consumo, economize na conta e reduza seu impacto ambiental</string>
+    <string name="btn_login">Entrar</string>
+    <string name="btn_create_account">Criar Conta</string>
+    <string name="login_subtitle">Energia inteligente para um futuro melhor</string>
+    <string name="login_title">Login</string>
+    <string name="your_email">Seu E-mail</string>
+    <string name="your_password">Sua Senha</string>
+    <string name="sign_in">Entrar</string>
+    <string name="don_t_have_an_account">Não tem uma conta?</string>
+    <string name="error_authentication">E-mail ou senha inválidos. Tente novamente</string>
+
+    <string name="sign_up">Cadastre-se</string>
+    <string name="create_account">Criar uma nova conta</string>
+    <string name="user_image">Imagem do usuário</string>
+    <string name="camera_icon">Ícone da câmera</string>
+    <string name="your_name">Seu nome</string>
+    <string name="person_icon">Ícone de pessoa</string>
+    <string name="email_icon">Ícone de e-mail</string>
+    <string name="remove_eye">Ocultar olho</string>
+    <string name="invalid_name">Nome inválido</string>
+    <string name="invalid_city">Cidade inválida</string>
+    <string name="invalid_email">E-mail inválido</string>
+    <string name="password_icon">Ícone de senha</string>
+    <string name="hide_password">Ocultar senha</string>
+    <string name="show_password">Mostrar senha</string>
+    <string name="already_have_an_account">Já tem uma conta?</string>
+    <string name="your_city">Sua Cidade</string>
+
+
+</resources>
