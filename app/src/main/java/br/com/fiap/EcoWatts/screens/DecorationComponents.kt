@@ -37,7 +37,7 @@ fun TopEndCard(modifier: Modifier = Modifier) {
 @Composable
 private fun TopEndCardPreview() {
     EcoWatssTheme {
-        TopEndCard()
+        TopEndCard() // Corrigido para chamar o componente correto
     }
 }
 
@@ -56,6 +56,6 @@ fun BottomStartCard(modifier: Modifier = Modifier) {
 @Composable
 private fun BottomStartCardPreview() {
     EcoWatssTheme {
-        BottomStartCard()
+        BottomStartCard() // Corrigido para chamar o componente correto
     }
 }

@@ -27,11 +27,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import br.com.fiap.EcoWatts.R
 import br.com.fiap.EcoWatts.navigation.Destination
 import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
 import br.com.fiap.EcoWatts.ui.theme.SoftBackgroundPrimary
 import br.com.fiap.EcoWatts.ui.theme.SoftBackgroundSecondary
-import br.com.fiap.EcoWatts.R
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants

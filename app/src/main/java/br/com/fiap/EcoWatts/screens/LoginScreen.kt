@@ -32,7 +32,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -45,8 +44,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.fiap.EcoWatts.R
 import br.com.fiap.EcoWatts.navigation.Destination
-import br.com.fiap.EcoWatts.repository.RoomUserRepository
-import br.com.fiap.EcoWatts.repository.SessionRepository
 import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
 
 @Composable
@@ -55,7 +52,7 @@ fun LoginScreen(navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background)
-    ) {
+    ){
         TopEndCard(modifier = Modifier.align(Alignment.TopEnd))
         BottomStartCard(modifier = Modifier.align(Alignment.BottomStart))
         Column(
@@ -74,7 +71,7 @@ fun LoginScreen(navController: NavController) {
 @Preview
 @Composable
 private fun LoginSrceenPreview() {
-    EcoWatssTheme {
+    EcoWatssTheme{
         LoginScreen(rememberNavController())
     }
 }
@@ -83,7 +80,7 @@ private fun LoginSrceenPreview() {
 fun LoginTitle(modifier: Modifier = Modifier) {
     Column(
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.Start,
+        horizontalAlignment =  Alignment.Start,
         modifier = Modifier
             .fillMaxWidth()
             .padding(32.dp)
@@ -104,7 +101,7 @@ fun LoginTitle(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun LoginTitlePreview() {
-    EcoWatssTheme {
+    EcoWatssTheme  {
         LoginTitle()
     }
 }
@@ -125,10 +122,6 @@ fun LoginForm(navController: NavController) {
         mutableStateOf(false)
     }
 
-    val context = LocalContext.current
-
-    val userRepository = RoomUserRepository(context)
-    val sessionRepository = SessionRepository(context)
 
     Column(
         modifier = Modifier
@@ -202,7 +195,7 @@ fun LoginForm(navController: NavController) {
                     Icons.Default.VisibilityOff
                 }
                 IconButton(
-                    onClick = { showPassword.value = !showPassword.value }
+                    onClick = {showPassword.value = !showPassword.value}
                 ) {
                     Icon(
                         imageVector = image,
@@ -222,26 +215,28 @@ fun LoginForm(navController: NavController) {
         Spacer(modifier = Modifier.height(32.dp))
         Button(
             onClick = {
-                val user = userRepository.login(emailState.value, passwordState.value)
-                if (user != null) {
-                    sessionRepository.saveUserId(user.id)
-                    navController.navigate(Destination.HomeScreen.route)
-                } else {
-                    authenticateError.value = true
-                }
+//                val authenticate =
+//                    userRepository.login(emailState.value, passwordState.value)
+//                if (authenticate) {
+//                    navController.navigate(
+//                        Destination.HomeScreen.createRoute(emailState.value)
+//                    )
+//                } else {
+//                    authenticateError.value = true
+//                }
             },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp),
-        shape = RoundedCornerShape(8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            shape = RoundedCornerShape(8.dp)
         ) {
-        Text(
-            text = stringResource(R.string.sign_in),
-            style = MaterialTheme.typography.labelMedium
-        )
-    }
+            Text(
+                text = stringResource(R.string.sign_in),
+                style = MaterialTheme.typography.labelMedium
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
-        if (authenticateError.value) {
+        if (authenticateError.value){
             Row {
                 Icon(
                     imageVector = Icons.Default.Error,
@@ -280,13 +275,12 @@ fun LoginForm(navController: NavController) {
         }
     }
 }
-
 @Preview(
     showBackground = true
 )
 @Composable
 private fun LoginFormScreen() {
-    EcoWatssTheme {
+    EcoWatssTheme  {
         LoginForm(rememberNavController())
     }
 }
