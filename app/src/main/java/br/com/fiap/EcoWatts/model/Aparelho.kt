@@ -1,7 +1,5 @@
 package br.com.fiap.EcoWatts.model
 
-package br.com.fiap.EcoWatts.model
-
 data class Aparelho(
     val id: Int = 0,
     val nome: String = "",
