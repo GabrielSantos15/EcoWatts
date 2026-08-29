@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import br.com.fiap.EcoWatts.repository.SessionRepository
+import br.com.fiap.EcoWatts.screens.AddApplianceScreen
 import br.com.fiap.EcoWatts.screens.HomeScreen
 import br.com.fiap.EcoWatts.screens.InitialScreen
 import br.com.fiap.EcoWatts.screens.LoginScreen
@@ -35,5 +36,6 @@ fun NavigationRoutes() {
         composable(Destination.HomeScreen.route){ HomeScreen(navController) }
         composable(Destination.SignupScreen.route) { SignupScreen(navController) }
         composable(Destination.LoginScreen.route) { LoginScreen(navController) }
+        composable(Destination.AddApplianceScreen.route) { AddApplianceScreen(navController) }
     }
 }

@@ -17,5 +17,7 @@ data class User(
     val password: String = "",
     val city: String = "",
     @ColumnInfo(name = "user_image")
-    val userImage: ByteArray? = null
+    val userImage: ByteArray? = null,
+
+    val precoKwh: Double = 0.8
 )

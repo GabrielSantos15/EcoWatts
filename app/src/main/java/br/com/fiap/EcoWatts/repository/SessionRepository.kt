@@ -10,11 +10,9 @@ class SessionRepository(context: Context) {
     fun saveUserId(id: Int) {
         prefs.edit().putInt("USER_ID", id).apply()
     }
-
     fun logout() {
         prefs.edit().putInt("USER_ID", 0).apply()
     }
-
 
     fun getUserId(): Int {
         return prefs.getInt("USER_ID", 0)
