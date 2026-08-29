@@ -8,9 +8,8 @@ import br.com.fiap.EcoWatts.model.User
 class RoomUserRepository(context: Context): UserRepository {
 
     private val ecoWattsDataBase = EcoWattsDataBase.getDatabase(context).userDao()
-
     override fun saveUser(user: User) {
-        ecoWattsDataBase.save(user)
+        ecoWattsDataBase.save(user);
     }
 
     override fun getUser(id: Int): User {
@@ -36,4 +35,5 @@ class RoomUserRepository(context: Context): UserRepository {
     override fun delete(user: User): Int {
         return ecoWattsDataBase.delete(user)
     }
+
 }

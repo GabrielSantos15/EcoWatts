@@ -8,7 +8,7 @@ import br.com.fiap.EcoWatts.model.Appliance
 import br.com.fiap.EcoWatts.model.ApplianceDao
 import br.com.fiap.EcoWatts.model.User
 
-@Database(entities = [User::class, Appliance::class], version = 4)
+@Database(entities = [User::class, Appliance::class], version = 3)
 abstract class EcoWattsDataBase: RoomDatabase() {
 
     abstract fun userDao(): UserDao

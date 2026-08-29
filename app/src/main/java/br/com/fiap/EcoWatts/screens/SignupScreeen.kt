@@ -1,6 +1,5 @@
 package br.com.fiap.EcoWatts.screens
 
-import br.com.fiap.EcoWatts.R
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -72,9 +71,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import br.com.fiap.EcoWatts.R
+import br.com.fiap.EcoWatts.model.User
 import br.com.fiap.EcoWatts.navigation.Destination
+import br.com.fiap.EcoWatts.repository.RoomUserRepository
 import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
-
+import br.com.fiap.EcoWatts.util.convertBitmapToByteArray
 
 @Composable
 fun SignupScreen(navController: NavController) {
@@ -83,8 +85,7 @@ fun SignupScreen(navController: NavController) {
 
     val placeholderImage = remember {
         BitmapFactory.decodeResource(
-            context.resources,
-            R.drawable.default_avatar
+            context.resources, R.drawable.default_avatar
         )
     }
     // Armazenar a imagem de profile
@@ -97,12 +98,8 @@ fun SignupScreen(navController: NavController) {
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         if (Build.VERSION.SDK_INT < 28) {
-            profileImage = MediaStore
-                .Images
-                .Media
-                .getBitmap(
-                    context.contentResolver,
-                    uri
+            profileImage = MediaStore.Images.Media.getBitmap(
+                    context.contentResolver, uri
                 )
         } else {
             if (uri != null) {
@@ -115,8 +112,7 @@ fun SignupScreen(navController: NavController) {
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         TopEndCard(modifier = Modifier.align(Alignment.TopEnd))
         BottomStartCard(modifier = Modifier.align(Alignment.BottomStart))
@@ -132,10 +128,9 @@ fun SignupScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(48.dp))
 
             UserImage(
-                profileImage = profileImage,
-                launchImage = launchImage
+                profileImage = profileImage, launchImage = launchImage
             )
-            SignupUserForm(navController,profileImage)
+            SignupUserForm(navController, profileImage)
         }
     }
 }
@@ -152,8 +147,7 @@ private fun SignupScreenPreview() {
 @Composable
 fun TitleComponent(modifier: Modifier = Modifier) {
     Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = stringResource(R.string.sign_up),
@@ -178,14 +172,12 @@ private fun TitleComponentPreview() {
 
 @Composable
 fun UserImage(
-    profileImage: Bitmap?,
-    launchImage: ManagedActivityResultLauncher<String, Uri?>
+    profileImage: Bitmap?, launchImage: ManagedActivityResultLauncher<String, Uri?>
 ) {
     Box(
         modifier = Modifier
             .size(120.dp)
-            .clickable { launchImage.launch("image/*") }
-    ) {
+            .clickable { launchImage.launch("image/*") }) {
         if (profileImage != null) {
             Image(
                 bitmap = profileImage.asImageBitmap(),
@@ -212,8 +204,7 @@ fun UserImage(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .background(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = CircleShape
+                    color = MaterialTheme.colorScheme.primary, shape = CircleShape
                 )
                 .padding(8.dp)
         )
@@ -235,8 +226,7 @@ private fun UserImagePreview() {
 
 @Composable
 fun SignupUserForm(
-    navController: NavController,
-    profileImage: Bitmap
+    navController: NavController, profileImage: Bitmap
 ) {
 
     var name by remember {
@@ -275,7 +265,7 @@ fun SignupUserForm(
         mutableStateOf(false)
     }
 
-    // val userRepository = RoomUserRepository(LocalContext.current)
+    val userRepository = RoomUserRepository(LocalContext.current)
 
     Column(
         modifier = Modifier
@@ -289,11 +279,9 @@ fun SignupUserForm(
             onValueChange = {
                 name = it
             },
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = OutlinedTextFieldDefaults
-                .colors(
+            colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 ),
@@ -330,19 +318,16 @@ fun SignupUserForm(
                         color = MaterialTheme.colorScheme.error
                     )
                 }
-            }
-        )
+            })
 
         OutlinedTextField(
             value = city,
             onValueChange = {
                 city = it
             },
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = OutlinedTextFieldDefaults
-                .colors(
+            colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 ),
@@ -379,19 +364,16 @@ fun SignupUserForm(
                         color = MaterialTheme.colorScheme.error
                     )
                 }
-            }
-        )
+            })
 
         OutlinedTextField(
             value = email,
             onValueChange = {
                 email = it
             },
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = OutlinedTextFieldDefaults
-                .colors(
+            colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 ),
@@ -409,8 +391,7 @@ fun SignupUserForm(
                 )
             },
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email,
-                imeAction = ImeAction.Next
+                keyboardType = KeyboardType.Email, imeAction = ImeAction.Next
             ),
             isError = isEmailError,
             trailingIcon = {
@@ -427,19 +408,16 @@ fun SignupUserForm(
                         color = MaterialTheme.colorScheme.error
                     )
                 }
-            }
-        )
+            })
 
         OutlinedTextField(
             value = password,
             onValueChange = {
                 password = it
             },
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = OutlinedTextFieldDefaults
-                .colors(
+            colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 ),
@@ -457,8 +435,7 @@ fun SignupUserForm(
                 )
             },
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done
+                keyboardType = KeyboardType.Password, imeAction = ImeAction.Done
             ),
             isError = isPasswordError,
             trailingIcon = {
@@ -468,8 +445,7 @@ fun SignupUserForm(
                     Icons.Default.VisibilityOff
                 }
                 IconButton(
-                    onClick = {showPassword.value = !showPassword.value}
-                ) {
+                    onClick = { showPassword.value = !showPassword.value }) {
                     Icon(
                         imageVector = image,
                         contentDescription = "",
@@ -494,19 +470,23 @@ fun SignupUserForm(
         Spacer(modifier = Modifier.height(32.dp))
         Button(
             onClick = {
-//                if(validate()){
-//                    userRepository.saveUser(
-//                        User(name = name, email = email, password = password, userImage = convertBitmapToByteArray(profileImage))
-//                    )
-//                    showDialogSucess = true
-//                }else{
-//                    showDialogError = true
-//                }
-            },
-            modifier = Modifier
+                if (validate()) {
+                    userRepository.saveUser(
+                        User(
+                            name = name,
+                            email = email,
+                            password = password,
+                            city = city,
+                            userImage = convertBitmapToByteArray(profileImage)
+                        )
+                    )
+                    showDialogSucess = true
+                } else {
+                    showDialogError = true
+                }
+            }, modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp),
-            shape = RoundedCornerShape(8.dp)
+                .height(48.dp), shape = RoundedCornerShape(8.dp)
         ) {
             Text(
                 text = stringResource(R.string.create_account),
@@ -526,8 +506,7 @@ fun SignupUserForm(
             TextButton(
                 onClick = {
                     navController.navigate(Destination.LoginScreen.route)
-                }
-            ) {
+                }) {
                 Text(
                     text = stringResource(R.string.sign_in),
                     style = MaterialTheme.typography.bodyMedium,
@@ -539,45 +518,34 @@ fun SignupUserForm(
 
     // sucesso
     if (showDialogSucess) {
-        AlertDialog(
-            onDismissRequest = { showDialogError = false },
-            title = {
-                Text(text = "Success")
-            },
-            text = {
-                Text(text = "Conta criada com sucesso")
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-//                        showDialogSucess = false
-//                        navController.navigate(Destination.LoginScreen.route)
-                    }
-                ) {
-                    Text(text = "Ok")
-                }
+        AlertDialog(onDismissRequest = { showDialogError = false }, title = {
+            Text(text = "Success")
+        }, text = {
+            Text(text = "Conta criada com sucesso")
+        }, confirmButton = {
+            TextButton(
+                onClick = {
+                       showDialogSucess = false
+                        navController.navigate(Destination.LoginScreen.route)
+                }) {
+                Text(text = "Ok")
             }
-        )
+        })
     }
     //erro
     if (showDialogError) {
-        AlertDialog(
-            onDismissRequest = { showDialogError = false },
-            title = {
-                Text(text = "Error")
-            },
-            text = {
-                Text(text = "Please fill in all fields correctly")
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDialogError = false
-                    }
-                ) {
-                    Text("Ok")
-                }
+        AlertDialog(onDismissRequest = { showDialogError = false }, title = {
+            Text(text = "Error")
+        }, text = {
+            Text(text = "Please fill in all fields correctly")
+        }, confirmButton = {
+            TextButton(
+                onClick = {
+                    showDialogError = false
+                }) {
+                Text("Ok")
             }
+        }
 
         )
     }
@@ -589,8 +557,7 @@ fun SignupUserForm(
 private fun SignupUserFormPreview() {
     EcoWatssTheme {
         SignupUserForm(
-           rememberNavController(),
-            profileImage = TODO()
+            rememberNavController(), profileImage = TODO()
         )
     }
 }

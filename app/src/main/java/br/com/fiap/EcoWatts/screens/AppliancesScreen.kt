@@ -31,10 +31,11 @@ import br.com.fiap.EcoWatts.util.formatConsumoKwh
 import br.com.fiap.EcoWatts.util.formatCurrencyBRL
 import br.com.fiap.EcoWatts.util.formatHorasDia
 import br.com.fiap.EcoWatts.util.formatPotencia
+import br.com.fiap.EcoWatts.util.monthlyConsumptionKwh
 import kotlinx.coroutines.launch
 
 @Composable
-fun MeusAparelhosScreen(navController: NavController) {
+fun AppliancesScreen(navController: NavController) {
     val context = LocalContext.current
     val sessionRepository = remember { SessionRepository(context) }
     val applianceRepository = remember { RoomApplianceRepository(context) }
@@ -55,7 +56,7 @@ fun MeusAparelhosScreen(navController: NavController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    navController.navigate(Destination.AddApplianceScreen.createRoute())
+                    navController.navigate(Destination.AddApplianceScreen.route)
                 },
                 shape = CircleShape,
                 containerColor = MaterialTheme.colorScheme.primary
@@ -92,7 +93,7 @@ fun MeusAparelhosScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = {
-                            navController.navigate(Destination.AddApplianceScreen.createRoute())
+                            navController.navigate(Destination.AddApplianceScreen.route)
                         }
                     ) {
                         Text(text = "Adicionar primeiro aparelho")
@@ -122,7 +123,7 @@ fun MeusAparelhosScreen(navController: NavController) {
             onDismiss = { aparelhoSelecionado = null },
             onEdit = {
                 aparelhoSelecionado = null
-                navController.navigate(Destination.AddApplianceScreen.createRoute(aparelho.id))
+                navController.navigate(Destination.AddApplianceScreen.route)
             },
             onDelete = {
                 aparelhoSelecionado = null
@@ -191,7 +192,7 @@ fun AparelhoCard(aparelho: Appliance, onClick: () -> Unit) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = formatPotencia(aparelho.powerWatts), style = MaterialTheme.typography.bodySmall)
                 Text(text = formatHorasDia(aparelho.hoursOfUsePerDay), style = MaterialTheme.typography.bodySmall)
-                Text(text = formatConsumoKwh(aparelho.monthlyConsumptionKwh), style = MaterialTheme.typography.bodySmall)
+                Text(text = formatConsumoKwh(aparelho.monthlyConsumptionKwh()), style = MaterialTheme.typography.bodySmall)
                 Text(
                     text = "${formatCurrencyBRL(aparelho.monthlyCost)}/mês",
                     style = MaterialTheme.typography.bodySmall,
@@ -217,7 +218,7 @@ fun AparelhoDetailDialog(
             Column {
                 Text(text = formatPotencia(aparelho.powerWatts))
                 Text(text = formatHorasDia(aparelho.hoursOfUsePerDay))
-                Text(text = formatConsumoKwh(aparelho.monthlyConsumptionKwh))
+                Text(text = formatConsumoKwh(aparelho.monthlyConsumptionKwh()), style = MaterialTheme.typography.bodySmall)
                 Text(text = "${formatCurrencyBRL(aparelho.monthlyCost)}/mês")
             }
         },
@@ -250,8 +251,8 @@ fun AparelhoDetailDialog(
 
 @Preview
 @Composable
-private fun MeusAparelhosScreenPreview() {
+private fun AppliancesScreenPreview() {
     EcoWatssTheme {
-        MeusAparelhosScreen(rememberNavController())
+        AppliancesScreen(rememberNavController())
     }
 }

@@ -1,5 +1,6 @@
 package br.com.fiap.EcoWatts.util
 
+import br.com.fiap.EcoWatts.model.Appliance
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -34,4 +35,8 @@ fun formatConsumoKwh(consumoMensalKwh: Double): String {
 fun formatCurrencyBRL(valor: Double): String {
     val formatter = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
     return formatter.format(valor)
+}
+
+fun Appliance.monthlyConsumptionKwh(): Double {
+    return (powerWatts * hoursOfUsePerDay * 30) / 1000.0
 }

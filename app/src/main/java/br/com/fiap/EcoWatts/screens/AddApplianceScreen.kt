@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +27,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,15 +52,12 @@ import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
 import kotlinx.coroutines.launch
 
 @Composable
-fun AddApplianceScreen(navController: NavController, applianceId: Int? = null) {
+fun AddApplianceScreen(navController: NavController) {
     val context = LocalContext.current
     val sessionRepository = SessionRepository(context)
     val userRepository = RoomUserRepository(context)
     val applianceRepository = RoomApplianceRepository(context)
     val coroutineScope = rememberCoroutineScope()
-
-    val emEdicao = applianceId != null
-    var idOriginal by remember { mutableStateOf(0) }
 
     var nome by remember { mutableStateOf("") }
     var potencia by remember { mutableStateOf("") }
@@ -74,21 +71,6 @@ fun AddApplianceScreen(navController: NavController, applianceId: Int? = null) {
     var showDialogError by remember { mutableStateOf(false) }
     var showDialogSuccess by remember { mutableStateOf(false) }
 
-    // Carrega os dados do aparelho quando estamos editando
-    LaunchedEffect(applianceId) {
-        if (applianceId != null) {
-            val appliance = applianceRepository.getApplianceById(applianceId)
-            if (appliance != null) {
-                idOriginal = appliance.id
-                nome = appliance.name
-                potencia = if (appliance.powerWatts % 1.0 == 0.0)
-                    appliance.powerWatts.toLong().toString() else appliance.powerWatts.toString()
-                horasPorDia = if (appliance.hoursOfUsePerDay % 1.0 == 0.0)
-                    appliance.hoursOfUsePerDay.toLong().toString() else appliance.hoursOfUsePerDay.toString()
-            }
-        }
-    }
-
     fun validate(): Boolean {
         isNomeError = nome.isBlank()
         isPotenciaError = potencia.toDoubleOrNull() == null || (potencia.toDoubleOrNull() ?: 0.0) <= 0.0
@@ -96,7 +78,11 @@ fun AddApplianceScreen(navController: NavController, applianceId: Int? = null) {
         return !isNomeError && !isPotenciaError && !isHorasError
     }
 
-    Scaffold { paddingValues ->
+    Scaffold(
+        bottomBar = {
+//            BottomAppBar(navController = navController, rotaAtual = "tela_adicionar")
+        }
+    ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -111,7 +97,7 @@ fun AddApplianceScreen(navController: NavController, applianceId: Int? = null) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = if (emEdicao) "Editar Aparelho" else "Cadastrar Aparelho",
+                    text = "Cadastrar Aparelho",
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.titleLarge
                 )
@@ -256,40 +242,24 @@ fun AddApplianceScreen(navController: NavController, applianceId: Int? = null) {
                         if (validate()) {
                             val userId = sessionRepository.getUserId()
                             val user = userRepository.getUser(userId)
-                            val precoKwh = user.precoKwh
+                            val precoKwh = user?.precoKwh ?: 0.8
 
                             val w = potencia.toDouble()
                             val h = horasPorDia.toDouble()
 
-                            // Fórmula: (Watts * Horas * 30 dias) / 1000 = kWh/mês
-                            val consumoMensalKwh = (w * h * 30) / 1000.0
-                            val custoMensal = consumoMensalKwh * precoKwh
+                            // Fórmula: (Watts * Horas * 30 dias / 1000) * Preço_do_kWh
+                            val custoMensal = ((w * h * 30) / 1000.0) * precoKwh
 
                             coroutineScope.launch {
-                                if (emEdicao) {
-                                    applianceRepository.update(
-                                        Appliance(
-                                            id = idOriginal,
-                                            name = nome,
-                                            powerWatts = w,
-                                            hoursOfUsePerDay = h,
-                                            monthlyConsumptionKwh = consumoMensalKwh,
-                                            monthlyCost = custoMensal,
-                                            userId = userId
-                                        )
+                                applianceRepository.insert(
+                                    Appliance(
+                                        name = nome,
+                                        powerWatts = w,
+                                        hoursOfUsePerDay = h,
+                                        monthlyCost = custoMensal,
+                                        userId = userId
                                     )
-                                } else {
-                                    applianceRepository.insert(
-                                        Appliance(
-                                            name = nome,
-                                            powerWatts = w,
-                                            hoursOfUsePerDay = h,
-                                            monthlyConsumptionKwh = consumoMensalKwh,
-                                            monthlyCost = custoMensal,
-                                            userId = userId
-                                        )
-                                    )
-                                }
+                                )
                                 showDialogSuccess = true
                             }
                         } else {
@@ -302,7 +272,7 @@ fun AddApplianceScreen(navController: NavController, applianceId: Int? = null) {
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = if (emEdicao) "Salvar Alterações" else "Salvar Aparelho",
+                        text = "Salvar Aparelho",
                         style = MaterialTheme.typography.labelMedium
                     )
                 }
@@ -315,15 +285,13 @@ fun AddApplianceScreen(navController: NavController, applianceId: Int? = null) {
         AlertDialog(
             onDismissRequest = { showDialogSuccess = false },
             title = { Text(text = "Sucesso") },
-            text = {
-                Text(text = if (emEdicao) "Aparelho atualizado com sucesso!" else "Aparelho cadastrado e calculado com sucesso!")
-            },
+            text = { Text(text = "Aparelho cadastrado e calculado com sucesso!") },
             confirmButton = {
                 TextButton(
                     onClick = {
                         showDialogSuccess = false
-                        navController.navigate(Destination.MeusAparelhosScreen.route) {
-                            popUpTo(Destination.HomeScreen.route)
+                        navController.navigate(Destination.HomeScreen.route) {
+                            popUpTo(Destination.HomeScreen.route) { inclusive = true }
                         }
                     }
                 ) {

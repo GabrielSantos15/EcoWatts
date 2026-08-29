@@ -2,17 +2,15 @@ package br.com.fiap.EcoWatts.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import br.com.fiap.EcoWatts.repository.SessionRepository
 import br.com.fiap.EcoWatts.screens.AddApplianceScreen
 import br.com.fiap.EcoWatts.screens.HomeScreen
 import br.com.fiap.EcoWatts.screens.InitialScreen
 import br.com.fiap.EcoWatts.screens.LoginScreen
-import br.com.fiap.EcoWatts.screens.MeusAparelhosScreen
+import br.com.fiap.EcoWatts.screens.AppliancesScreen
 import br.com.fiap.EcoWatts.screens.SignupScreen
 
 @Composable
@@ -39,25 +37,7 @@ fun NavigationRoutes() {
         composable(Destination.HomeScreen.route){ HomeScreen(navController) }
         composable(Destination.SignupScreen.route) { SignupScreen(navController) }
         composable(Destination.LoginScreen.route) { LoginScreen(navController) }
-
-        composable(Destination.MeusAparelhosScreen.route) {
-            MeusAparelhosScreen(navController)
-        }
-
-        composable(
-            route = Destination.AddApplianceScreen.route,
-            arguments = listOf(
-                navArgument("applianceId") {
-                    type = NavType.IntType
-                    defaultValue = -1
-                }
-            )
-        ) { backStackEntry ->
-            val applianceId = backStackEntry.arguments?.getInt("applianceId") ?: -1
-            AddApplianceScreen(
-                navController = navController,
-                applianceId = if (applianceId == -1) null else applianceId
-            )
-        }
+        composable(Destination.AddApplianceScreen.route) { AddApplianceScreen(navController) }
+        composable(Destination.AppliancesScreen.route) { AppliancesScreen(navController) }
     }
 }
