@@ -29,6 +29,9 @@
     <string name="show_password">Mostrar senha</string>
     <string name="already_have_an_account">Já tem uma conta?</string>
     <string name="your_city">Sua Cidade</string>
+    <string name="home">Início</string>
+    <string name="devices">Aparelhos</string>
+    <string name="tips">Dicas</string>
 
 
 </resources>

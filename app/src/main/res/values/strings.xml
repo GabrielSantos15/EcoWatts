@@ -28,5 +28,8 @@
     <string name="show_password">Show password</string>
     <string name="already_have_an_account">Already have an account?</string>
     <string name="your_city">Your City</string>
+    <string name="home">Home</string>
+    <string name="devices">Devices</string>
+    <string name="tips">Tips</string>
 
 </resources>
