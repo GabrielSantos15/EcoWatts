@@ -34,5 +34,6 @@
     <string name="hello">Hello, %1$s!</string>
     <string name="my_appliances">My Appliances</string>
     <string name="track_your_energy_consumption">Track your energy consumption</string>
+    <string name="invalid_password">invalid Password</string>
 
 </resources>

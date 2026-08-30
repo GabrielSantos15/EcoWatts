@@ -248,7 +248,9 @@ fun SignupUserForm(
     // verifica dados
     var isNameError by remember { mutableStateOf(false) }
     var isEmailError by remember { mutableStateOf(false) }
+    var isCityError by remember { mutableStateOf(false) }
     var isPasswordError by remember { mutableStateOf(false) }
+
 
     // Estado de erro
     var showDialogError by remember { mutableStateOf(false) }
@@ -257,6 +259,7 @@ fun SignupUserForm(
     fun validate(): Boolean {
         isNameError = name.length < 3
         isEmailError = email.length < 3 || !Patterns.EMAIL_ADDRESS.matcher(email).matches()
+        isCityError = city.isNotBlank() && city.length >= 3
         isPasswordError = password.length < 3
         return !isNameError && !isEmailError && !isPasswordError
     }
@@ -349,14 +352,14 @@ fun SignupUserForm(
                 capitalization = KeyboardCapitalization.Words,
                 imeAction = ImeAction.Next
             ),
-            isError = isNameError,
+            isError = isCityError,
             trailingIcon = {
-                if (isNameError) {
+                if (isCityError) {
                     Icon(imageVector = Icons.Default.Error, contentDescription = "")
                 }
             },
             supportingText = {
-                if (isNameError) {
+                if (isCityError) {
                     Text(
                         text = stringResource(R.string.invalid_city),
                         modifier = Modifier.fillMaxWidth(),
@@ -456,7 +459,7 @@ fun SignupUserForm(
             supportingText = {
                 if (isPasswordError) {
                     Text(
-                        text = "invalid Password",
+                        text = stringResource(R.string.invalid_password),
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.End,
                         color = MaterialTheme.colorScheme.error

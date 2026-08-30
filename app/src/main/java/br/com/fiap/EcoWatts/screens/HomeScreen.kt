@@ -92,27 +92,6 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
                     text = "TELA HOME",
                     style = MaterialTheme.typography.headlineLarge
                 )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = userEmail,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-
-                Spacer(modifier = Modifier.height(48.dp))
-
-                Button(
-                    onClick = {
-                        sessionRepository.logout()
-
-                        navController.navigate(Destination.InitialScreen.route) {
-                            popUpTo(0)
-                        }
-                    }
-                ) {
-                    Text(text = "Sair")
-                }
             }
         }
     }

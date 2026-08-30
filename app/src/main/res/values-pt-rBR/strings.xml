@@ -35,6 +35,7 @@
     <string name="hello">Olá, %1$s!</string>
     <string name="my_appliances">Meus Aparelhos</string>
     <string name="track_your_energy_consumption">Acompanhe seu consumo de energia</string>
+    <string name="invalid_password">invalid Password</string>
 
 
 </resources>
