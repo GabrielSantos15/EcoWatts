@@ -66,7 +66,7 @@ fun AppliancesScreen(navController: NavController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    navController.navigate(Destination.AddApplianceScreen.route)
+                    navController.navigate(Destination.AddApplianceScreen.createRoute())
                 },
                 shape = CircleShape,
                 containerColor = MaterialTheme.colorScheme.primary
@@ -96,7 +96,7 @@ fun AppliancesScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = {
-                            navController.navigate(Destination.AddApplianceScreen.route)
+                            navController.navigate(Destination.AddApplianceScreen.createRoute())
                         }
                     ) {
                         Text(text = "Adicionar primeiro aparelho")
@@ -126,7 +126,7 @@ fun AppliancesScreen(navController: NavController) {
             onDismiss = { aparelhoSelecionado = null },
             onEdit = {
                 aparelhoSelecionado = null
-                navController.navigate(Destination.AddApplianceScreen.route)
+                navController.navigate(Destination.AddApplianceScreen.createRoute(aparelho.id))
             },
             onDelete = {
                 aparelhoSelecionado = null

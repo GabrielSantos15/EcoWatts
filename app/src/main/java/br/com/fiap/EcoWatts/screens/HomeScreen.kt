@@ -70,7 +70,7 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
             bottomBar = { ButtomAppBar(navController, "tela_home") },
             floatingActionButton = {
                 FloatingActionButton(
-                    onClick = { navController.navigate(Destination.AddApplianceScreen.route) },
+                    onClick = { navController.navigate(Destination.AddApplianceScreen.createRoute()) },
                     shape = CircleShape,
                     containerColor = MaterialTheme.colorScheme.primary
                 ) {

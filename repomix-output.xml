@@ -57,32 +57,51 @@ app/
               EcoWatts/
                 components/
                   ButtomAppBar.kt
+                  Skeleton.kt
+                  TipCard.kt
+                  TopAppBar.kt
+                  WeatherInfoCard.kt
+                  WeatherTipsCarousel.kt
                 dao/
                   AppliancesDao.kt
                   EcoWattsDataBase.kt
                   UserDao.kt
+                factory/
+                  RetrofitFactory.kt
                 model/
                   Appliances.kt
                   User.kt
+                  WeatherModels.kt
+                  WeatherTipModels.kt
                 navigation/
                   NavigationRoutes.kt
                   ScreenRoutes.kt
                 repository/
                   ApplianceRepository.kt
                   RoomApplianceRepository.kt
+                  RoomUserRepository.kt
                   SessionRepository.kt
+                  UserRepository.kt
+                  WeatherRepository.kt
                 screens/
                   AddApplianceScreen.kt
+                  AppliancesScreen.kt
                   DecorationComponents.kt
                   HomeScreen.kt
                   IntialScreen.kt
                   LoginScreen.kt
+                  ProfileScreen.kt
                   SignupScreeen.kt
+                service/
+                  OpenMeteoService.kt
                 ui/
                   theme/
                     Color.kt
                     Theme.kt
                     Type.kt
+                util/
+                  Formatters.kt
+                  Image.kt
                 MainActivity.kt
       keepRules/
         rules.keep
@@ -152,557 +171,6 @@ settings.gradle.kts
 <files>
 This section contains the contents of the repository's files.
 
-<file path="app/src/main/java/br/com/fiap/EcoWatts/components/ButtomAppBar.kt">
-package br.com.fiap.EcoWatts.components
-
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import br.com.fiap.EcoWatts.R
-import br.com.fiap.EcoWatts.navigation.Destination
-import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
-
-data class BottomNavigationItem(
-    val title: String,
-    val icon: ImageVector,
-    val route: String
-)
-
-@Composable
-fun ButtomAppBar(
-    navController: NavController,
-    currentRoute: String,
-    modifier: Modifier = Modifier
-) {
-    val items = listOf(
-        BottomNavigationItem(stringResource(R.string.home), icon = Icons.Default.Home, route = Destination.HomeScreen.route),
-        BottomNavigationItem(stringResource(R.string.devices), icon = Icons.Default.List, route = Destination.HomeScreen.route),
-        BottomNavigationItem(stringResource(R.string.tips), icon = Icons.Default.Lightbulb, route = Destination.HomeScreen.route),
-    )
-
-    NavigationBar(
-        containerColor = MaterialTheme.colorScheme.secondary
-    ) {
-        items.forEach { item ->
-            val isSelected = currentRoute == item.route
-
-            NavigationBarItem(
-                selected = isSelected,
-                onClick = {
-                    if (!isSelected) {
-                        navController.navigate(item.route) {
-                            popUpTo(navController.graph.startDestinationId) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                },
-                icon = {
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = item.title,
-                        modifier = Modifier.size(24.dp)
-                    )
-                },
-                label = {
-                    Text(
-                        text = item.title,
-                        style = MaterialTheme.typography.displaySmall
-                    )
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.onSecondary,
-                    selectedTextColor = MaterialTheme.colorScheme.onSecondary,
-                    indicatorColor = MaterialTheme.colorScheme.primary,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.6f),
-                    unselectedTextColor = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.6f)
-                )
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun ButtomAppBarPreview() {
-    EcoWatssTheme() {
-        ButtomAppBar(rememberNavController(),"")
-    }
-}
-</file>
-
-<file path="app/src/main/java/br/com/fiap/EcoWatts/dao/AppliancesDao.kt">
-package br.com.fiap.EcoWatts.model
-
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Update
-
-@Dao
-interface ApplianceDao {
-
-    @Insert
-    suspend fun insert(appliance: Appliance)
-
-    @Update
-    suspend fun update(appliance: Appliance)
-
-    @Delete
-    suspend fun delete(appliance: Appliance)
-
-    @Query("SELECT * FROM appliances WHERE userId = :userId")
-    suspend fun getAppliancesByUser(userId: Int): List<Appliance>
-
-    @Query("SELECT * FROM appliances WHERE id = :id")
-    suspend fun getApplianceById(id: Int): Appliance?
-
-    @Query("SELECT SUM(monthlyCost) FROM appliances WHERE userId = :userId")
-    suspend fun getTotalMonthlyCostByUser(userId: Int): Double?
-}
-</file>
-
-<file path="app/src/main/java/br/com/fiap/EcoWatts/model/Appliances.kt">
-package br.com.fiap.EcoWatts.model
-
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
-import androidx.room.PrimaryKey
-
-@Entity(
-    tableName = "appliances",
-    foreignKeys = [
-        ForeignKey(
-            entity = User::class,
-            parentColumns = ["id"],
-            childColumns = ["userId"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ],
-    indices = [Index("userId")]
-)
-data class Appliance(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
-    val name: String,
-    val powerWatts: Double,
-    val hoursOfUsePerDay: Double,
-    val monthlyCost: Double,
-    val userId: Int
-)
-</file>
-
-<file path="app/src/main/java/br/com/fiap/EcoWatts/repository/ApplianceRepository.kt">
-package br.com.fiap.EcoWatts.repository
-
-import br.com.fiap.EcoWatts.model.Appliance
-
-interface ApplianceRepository {
-
-    suspend fun insert(appliance: Appliance)
-
-    suspend fun update(appliance: Appliance)
-
-    suspend fun delete(appliance: Appliance)
-
-    suspend fun getAppliancesByUser(userId: Int): List<Appliance>
-
-    suspend fun getApplianceById(id: Int): Appliance?
-
-    suspend fun getTotalMonthlyCostByUser(userId: Int): Double
-}
-</file>
-
-<file path="app/src/main/java/br/com/fiap/EcoWatts/repository/RoomApplianceRepository.kt">
-package br.com.fiap.EcoWatts.repository
-
-import android.content.Context
-import br.com.fiap.EcoWatts.dao.EcoWattsDataBase
-import br.com.fiap.EcoWatts.model.Appliance
-
-class RoomApplianceRepository(context: Context) : ApplianceRepository {
-
-    private val applianceDao = EcoWattsDataBase.getDatabase(context).applianceDao()
-
-    override suspend fun insert(appliance: Appliance) {
-        applianceDao.insert(appliance)
-    }
-
-    override suspend fun update(appliance: Appliance) {
-        applianceDao.update(appliance)
-    }
-
-    override suspend fun delete(appliance: Appliance) {
-        applianceDao.delete(appliance)
-    }
-
-    override suspend fun getAppliancesByUser(userId: Int): List<Appliance> {
-        return applianceDao.getAppliancesByUser(userId)
-    }
-
-    override suspend fun getApplianceById(id: Int): Appliance? {
-        return applianceDao.getApplianceById(id)
-    }
-
-    override suspend fun getTotalMonthlyCostByUser(userId: Int): Double {
-        return applianceDao.getTotalMonthlyCostByUser(userId) ?: 0.0
-    }
-}
-</file>
-
-<file path="app/src/main/java/br/com/fiap/EcoWatts/screens/AddApplianceScreen.kt">
-package br.com.fiap.EcoWatts.screens
-
-import android.content.res.Configuration
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Devices
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import br.com.fiap.EcoWatts.model.Appliance
-import br.com.fiap.EcoWatts.navigation.Destination
-import br.com.fiap.EcoWatts.repository.RoomApplianceRepository
-import br.com.fiap.EcoWatts.repository.RoomUserRepository
-import br.com.fiap.EcoWatts.repository.SessionRepository
-import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
-import kotlinx.coroutines.launch
-
-@Composable
-fun AddApplianceScreen(navController: NavController) {
-    val context = LocalContext.current
-    val sessionRepository = SessionRepository(context)
-    val userRepository = RoomUserRepository(context)
-    val applianceRepository = RoomApplianceRepository(context)
-    val coroutineScope = rememberCoroutineScope()
-
-    var nome by remember { mutableStateOf("") }
-    var potencia by remember { mutableStateOf("") }
-    var horasPorDia by remember { mutableStateOf("") }
-
-    // Estados de erro
-    var isNomeError by remember { mutableStateOf(false) }
-    var isPotenciaError by remember { mutableStateOf(false) }
-    var isHorasError by remember { mutableStateOf(false) }
-
-    var showDialogError by remember { mutableStateOf(false) }
-    var showDialogSuccess by remember { mutableStateOf(false) }
-
-    fun validate(): Boolean {
-        isNomeError = nome.isBlank()
-        isPotenciaError = potencia.toDoubleOrNull() == null || (potencia.toDoubleOrNull() ?: 0.0) <= 0.0
-        isHorasError = horasPorDia.toDoubleOrNull() == null || (horasPorDia.toDoubleOrNull() ?: 0.0) <= 0.0 || (horasPorDia.toDoubleOrNull() ?: 0.0) > 24.0
-        return !isNomeError && !isPotenciaError && !isHorasError
-    }
-
-    Scaffold(
-        bottomBar = {
-//            BottomAppBar(navController = navController, rotaAtual = "tela_adicionar")
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(32.dp)
-                    .align(Alignment.Center),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Cadastrar Aparelho",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Text(
-                    text = "Informe os dados para calcular o custo mensal",
-                    color = MaterialTheme.colorScheme.secondary,
-                    style = MaterialTheme.typography.titleSmall,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // Campo Nome do Aparelho
-                OutlinedTextField(
-                    value = nome,
-                    onValueChange = { nome = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                    ),
-                    label = { Text(text = "Nome do Aparelho", style = MaterialTheme.typography.labelSmall) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Devices,
-                            contentDescription = "",
-                            tint = MaterialTheme.colorScheme.tertiary
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        capitalization = KeyboardCapitalization.Words,
-                        imeAction = ImeAction.Next
-                    ),
-                    isError = isNomeError,
-                    trailingIcon = {
-                        if (isNomeError) {
-                            Icon(imageVector = Icons.Default.Error, contentDescription = "")
-                        }
-                    },
-                    supportingText = {
-                        if (isNomeError) {
-                            Text(
-                                text = "Informe um nome válido",
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.End,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Campo Potência (Watts)
-                OutlinedTextField(
-                    value = potencia,
-                    onValueChange = { potencia = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                    ),
-                    label = { Text(text = "Potência (Watts)", style = MaterialTheme.typography.labelSmall) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Bolt,
-                            contentDescription = "",
-                            tint = MaterialTheme.colorScheme.tertiary
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Next
-                    ),
-                    isError = isPotenciaError,
-                    trailingIcon = {
-                        if (isPotenciaError) {
-                            Icon(imageVector = Icons.Default.Error, contentDescription = "")
-                        }
-                    },
-                    supportingText = {
-                        if (isPotenciaError) {
-                            Text(
-                                text = "Informe um valor em Watts válido",
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.End,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Campo Horas de uso por dia
-                OutlinedTextField(
-                    value = horasPorDia,
-                    onValueChange = { horasPorDia = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                    ),
-                    label = { Text(text = "Horas de uso por dia", style = MaterialTheme.typography.labelSmall) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Schedule,
-                            contentDescription = "",
-                            tint = MaterialTheme.colorScheme.tertiary
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Done
-                    ),
-                    isError = isHorasError,
-                    trailingIcon = {
-                        if (isHorasError) {
-                            Icon(imageVector = Icons.Default.Error, contentDescription = "")
-                        }
-                    },
-                    supportingText = {
-                        if (isHorasError) {
-                            Text(
-                                text = "Informe entre 1 e 24 horas",
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.End,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Button(
-                    onClick = {
-                        if (validate()) {
-                            val userId = sessionRepository.getUserId()
-                            val user = userRepository.getUser(userId)
-                            val precoKwh = user?.precoKwh ?: 0.8
-
-                            val w = potencia.toDouble()
-                            val h = horasPorDia.toDouble()
-
-                            // Fórmula: (Watts * Horas * 30 dias / 1000) * Preço_do_kWh
-                            val custoMensal = ((w * h * 30) / 1000.0) * precoKwh
-
-                            coroutineScope.launch {
-                                applianceRepository.insert(
-                                    Appliance(
-                                        name = nome,
-                                        powerWatts = w,
-                                        hoursOfUsePerDay = h,
-                                        monthlyCost = custoMensal,
-                                        userId = userId
-                                    )
-                                )
-                                showDialogSuccess = true
-                            }
-                        } else {
-                            showDialogError = true
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = "Salvar Aparelho",
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                }
-            }
-        }
-    }
-
-    // Dialogo de Sucesso
-    if (showDialogSuccess) {
-        AlertDialog(
-            onDismissRequest = { showDialogSuccess = false },
-            title = { Text(text = "Sucesso") },
-            text = { Text(text = "Aparelho cadastrado e calculado com sucesso!") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDialogSuccess = false
-                        navController.navigate(Destination.HomeScreen.route) {
-                            popUpTo(Destination.HomeScreen.route) { inclusive = true }
-                        }
-                    }
-                ) {
-                    Text(text = "Ok")
-                }
-            }
-        )
-    }
-
-    // Dialogo de Erro
-    if (showDialogError) {
-        AlertDialog(
-            onDismissRequest = { showDialogError = false },
-            title = { Text(text = "Erro de Validação") },
-            text = { Text(text = "Por favor, preencha todos os campos corretamente.") },
-            confirmButton = {
-                TextButton(
-                    onClick = { showDialogError = false }
-                ) {
-                    Text("Ok")
-                }
-            }
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
-@Composable
-private fun AddApplianceScreenPreview() {
-    EcoWatssTheme {
-        AddApplianceScreen(rememberNavController())
-    }
-}
-</file>
-
 <file path="app/src/androidTest/java/br/com/fiap/EcoWatts/ExampleInstrumentedTest.kt">
 package br.com.fiap.EcoWatts
 
@@ -730,15 +198,873 @@ class ExampleInstrumentedTest {
 }
 </file>
 
-<file path="app/src/main/java/br/com/fiap/EcoWatts/navigation/ScreenRoutes.kt">
-package br.com.fiap.EcoWatts.navigation
+<file path="app/src/main/java/br/com/fiap/EcoWatts/components/Skeleton.kt">
+package br.com.fiap.EcoWatts.components
 
-sealed class Destination(val route: String){
-    object InitialScreen: Destination("initial")
-    object SignupScreen: Destination("signup")
-    object HomeScreen: Destination("home")
-    object LoginScreen: Destination("login")
-    object AddApplianceScreen : Destination("add_appliance")
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
+
+/**
+ * Brush animado de "shimmer" (luz passando). Reutilizável em qualquer skeleton.
+ */
+@Composable
+fun rememberShimmerBrush(): Brush {
+    val transition = rememberInfiniteTransition(label = "shimmer")
+    val translateAnim by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "shimmer_translate"
+    )
+
+    val shimmerColors = listOf(
+        Color.White.copy(alpha = 0.1f),
+        Color.White.copy(alpha = 0.3f),
+        Color.White.copy(alpha = 0.1f)
+    )
+
+    return Brush.linearGradient(
+        colors = shimmerColors,
+        start = Offset(translateAnim - 500f, 0f),
+        end = Offset(translateAnim, 0f)
+    )
+}
+
+/**
+ * Bloco retangular (ou qualquer shape) de skeleton. Peça base — qualquer
+ * outro skeleton específico de tela pode ser montado combinando isso.
+ *
+ * @param width largura fixa; se null, ocupa a largura disponível (fillMaxWidth)
+ * @param height altura fixa
+ * @param shape formato do bloco (retângulo arredondado, círculo, etc.)
+ */
+@Composable
+fun SkeletonBox(
+    modifier: Modifier = Modifier,
+    width: Dp? = null,
+    height: Dp = 16.dp,
+    shape: Shape = RoundedCornerShape(8.dp)
+) {
+    val brush = rememberShimmerBrush()
+
+    val sizedModifier = if (width != null) {
+        modifier.size(width = width, height = height)
+    } else {
+        modifier.height(height)
+    }
+
+    Column(
+        modifier = sizedModifier
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
+            .background(brush)
+    ) {}
+}
+
+/**
+ * Círculo de skeleton — para avatares, ícones, etc.
+ */
+@Composable
+fun SkeletonCircle(
+    modifier: Modifier = Modifier,
+    size: Dp = 48.dp
+) {
+    SkeletonBox(
+        modifier = modifier,
+        width = size,
+        height = size,
+        shape = CircleShape
+    )
+}
+
+/**
+ * Linha de texto de skeleton — atalho para SkeletonBox com proporções de texto.
+ */
+@Composable
+fun SkeletonTextLine(
+    modifier: Modifier = Modifier,
+    width: Dp = 120.dp,
+    height: Dp = 14.dp
+) {
+    SkeletonBox(
+        modifier = modifier,
+        width = width,
+        height = height,
+        shape = RoundedCornerShape(4.dp)
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SkeletonPreview() {
+    EcoWatssTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SkeletonCircle()
+                Column {
+                    SkeletonTextLine(width = 100.dp, height = 20.dp)
+                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(6.dp))
+                    SkeletonTextLine(width = 160.dp)
+                }
+            }
+            androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
+            SkeletonBox(height = 90.dp, shape = RoundedCornerShape(16.dp))
+        }
+    }
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/components/TipCard.kt">
+package br.com.fiap.EcoWatts.components
+
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AcUnit
+import androidx.compose.material.icons.filled.Air
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.LocalLaundryService
+import androidx.compose.material.icons.filled.Shower
+import androidx.compose.material.icons.filled.Thermostat
+import androidx.compose.material.icons.filled.Thunderstorm
+import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import br.com.fiap.EcoWatts.R
+import br.com.fiap.EcoWatts.model.EnergyTip
+import br.com.fiap.EcoWatts.model.WeatherTipData
+import br.com.fiap.EcoWatts.repository.RoomUserRepository
+import br.com.fiap.EcoWatts.repository.SessionRepository
+import br.com.fiap.EcoWatts.repository.WeatherRepository
+import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
+
+@Composable
+fun TipCard(modifier: Modifier = Modifier) {
+    val weatherRepository = remember { WeatherRepository() }
+    val context = LocalContext.current
+    val sessionRepository = remember { SessionRepository(context) }
+    val userRepository = remember { RoomUserRepository(context) }
+
+    var isLoading by remember { mutableStateOf(true) }
+    var hasError by remember { mutableStateOf(false) }
+    var weatherData by remember { mutableStateOf<WeatherTipData?>(null) }
+
+    // Strings resolvidas aqui em cima, fora do LaunchedEffect,
+    // porque stringResource só pode ser chamado em contexto @Composable
+    val extremeColdTitle = stringResource(R.string.tip_extreme_cold_title)
+    val extremeColdMessage = stringResource(R.string.tip_extreme_cold_message)
+    val heatersTitle = stringResource(R.string.tip_heaters_title)
+    val heatersMessage = stringResource(R.string.tip_heaters_message)
+    val coldShowerTitle = stringResource(R.string.tip_cold_shower_title)
+    val coldShowerMessage = stringResource(R.string.tip_cold_shower_message)
+    val mildWeatherTitle = stringResource(R.string.tip_mild_weather_title)
+    val mildWeatherMessage = stringResource(R.string.tip_mild_weather_message)
+    val daylightTitle = stringResource(R.string.tip_daylight_title)
+    val daylightMessage = stringResource(R.string.tip_daylight_message)
+    val moderateHeatTitle = stringResource(R.string.tip_moderate_heat_title)
+    val moderateHeatMessage = stringResource(R.string.tip_moderate_heat_message)
+    val fanBeforeAcTitle = stringResource(R.string.tip_fan_before_ac_title)
+    val fanBeforeAcMessage = stringResource(R.string.tip_fan_before_ac_message)
+    val extremeHeatTitle = stringResource(R.string.tip_extreme_heat_title)
+    val extremeHeatMessage = stringResource(R.string.tip_extreme_heat_message)
+    val fridgeTitle = stringResource(R.string.tip_fridge_title)
+    val fridgeMessage = stringResource(R.string.tip_fridge_message)
+    val rainyDayTitle = stringResource(R.string.tip_rainy_day_title)
+    val rainyDayMessage = stringResource(R.string.tip_rainy_day_message)
+    val stormTitle = stringResource(R.string.tip_storm_title)
+    val stormMessage = stringResource(R.string.tip_storm_message)
+    val fogTitle = stringResource(R.string.tip_fog_title)
+    val fogMessage = stringResource(R.string.tip_fog_message)
+    val sunnyDayTitle = stringResource(R.string.tip_sunny_day_title)
+    val sunnyDayMessage = stringResource(R.string.tip_sunny_day_message)
+    val loadingText = stringResource(R.string.weather_loading)
+    val unavailableText = stringResource(R.string.weather_unavailable)
+
+    LaunchedEffect(Unit) {
+        val loggedInId = sessionRepository.getUserId()
+
+        if (loggedInId != 0) {
+            val user = userRepository.getUser(loggedInId)
+
+            if (user != null) {
+                try {
+                    val cidade = user.city
+                    val resultado = weatherRepository.getWeatherForCity(cidade)
+
+                    if (resultado != null) {
+                        val clima = resultado.first
+                        val local = resultado.second
+                        val regiao = local.state ?: local.country
+                        val temp = clima.temperature
+                        val codigo = clima.weatherCode
+
+                        val (icon, corFundo) = when {
+                            temp < 12 -> Icons.Default.AcUnit to Color(0xFF37474F)
+                            temp < 18 -> Icons.Default.Cloud to Color(0xFF4A6FA5)
+                            temp < 24 -> Icons.Default.WbSunny to Color(0xFF5C9EAD)
+                            temp < 30 -> Icons.Default.WbSunny to Color(0xFFEF8C3C)
+                            else -> Icons.Default.WbSunny to Color(0xFFD64545)
+                        }
+
+                        val tips = mutableListOf<EnergyTip>()
+
+                        when {
+                            temp < 12 -> {
+                                tips.add(EnergyTip(extremeColdTitle, extremeColdMessage, Icons.Default.Shower))
+                                tips.add(EnergyTip(heatersTitle, heatersMessage, Icons.Default.Bolt))
+                            }
+                            temp < 18 -> {
+                                tips.add(EnergyTip(coldShowerTitle, coldShowerMessage, Icons.Default.Shower))
+                            }
+                            temp < 24 -> {
+                                tips.add(EnergyTip(mildWeatherTitle, mildWeatherMessage, Icons.Default.WaterDrop))
+                                tips.add(EnergyTip(daylightTitle, daylightMessage, Icons.Default.Lightbulb))
+                            }
+                            temp < 30 -> {
+                                tips.add(EnergyTip(moderateHeatTitle, moderateHeatMessage, Icons.Default.Air))
+                                tips.add(EnergyTip(fanBeforeAcTitle, fanBeforeAcMessage, Icons.Default.Thermostat))
+                            }
+                            else -> {
+                                tips.add(EnergyTip(extremeHeatTitle, extremeHeatMessage, Icons.Default.Air))
+                                tips.add(EnergyTip(fridgeTitle, fridgeMessage, Icons.Default.Thermostat))
+                            }
+                        }
+
+                        when (codigo) {
+                            in 51..67, in 80..82 -> {
+                                tips.add(EnergyTip(rainyDayTitle, rainyDayMessage, Icons.Default.LocalLaundryService))
+                            }
+                            in 95..99 -> {
+                                tips.add(EnergyTip(stormTitle, stormMessage, Icons.Default.Thunderstorm))
+                            }
+                            45, 48 -> {
+                                tips.add(EnergyTip(fogTitle, fogMessage, Icons.Default.Air))
+                            }
+                            0 -> {
+                                tips.add(EnergyTip(sunnyDayTitle, sunnyDayMessage, Icons.Default.WbSunny))
+                            }
+                        }
+
+                        weatherData = WeatherTipData(
+                            temperature = "${temp}°C",
+                            locationInfo = "${local.name} - $regiao • Vento ${clima.windSpeed} km/h",
+                            icon = icon,
+                            backgroundColor = corFundo,
+                            tips = tips
+                        )
+                        isLoading = false
+                    } else {
+                        hasError = true
+                        isLoading = false
+                    }
+                } catch (e: Exception) {
+                    hasError = true
+                    isLoading = false
+                }
+            } else {
+                hasError = true
+                isLoading = false
+            }
+        }
+    }
+
+    AnimatedContent(
+        targetState = Triple(isLoading, hasError, weatherData),
+        label = "weather_tip_transition"
+    ) { (loading, error, data) ->
+        when {
+            loading -> {
+                    WeatherTipSkeleton(modifier = modifier)
+            }
+
+            error || data == null -> {
+                Card(
+                    modifier = modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Cloud,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = unavailableText,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+
+            else -> {
+                Column(modifier = modifier.fillMaxWidth()) {
+                    WeatherInfoCard(data = data)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    WeatherTipsCarousel(
+                        tips = data.tips,
+                        cardColor = data.backgroundColor
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TipCardPreview() {
+    val sampleData = WeatherTipData(
+        temperature = "15°C",
+        locationInfo = "Boituva - SP • Vento 8 km/h",
+        icon = Icons.Default.Cloud,
+        backgroundColor = Color(0xFF4A6FA5),
+        tips = listOf(
+            EnergyTip(
+                stringResource(R.string.tip_cold_shower_title),
+                stringResource(R.string.tip_cold_shower_message),
+                Icons.Default.Shower
+            ),
+            EnergyTip(
+                stringResource(R.string.tip_rainy_day_title),
+                stringResource(R.string.tip_rainy_day_message),
+                Icons.Default.LocalLaundryService
+            )
+        )
+    )
+
+    EcoWatssTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            WeatherInfoCard(data = sampleData)
+            Spacer(modifier = Modifier.height(12.dp))
+            WeatherTipsCarousel(
+                tips = sampleData.tips,
+                cardColor = sampleData.backgroundColor
+            )
+        }
+    }
+}
+
+@Composable
+fun WeatherTipSkeleton(modifier: Modifier = Modifier) {
+    Column(modifier = modifier.fillMaxWidth()) {
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    SkeletonTextLine(width = 90.dp, height = 32.dp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    SkeletonTextLine(width = 160.dp)
+                }
+                SkeletonCircle(size = 48.dp)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Column(modifier = Modifier.padding(20.dp)) {
+                SkeletonTextLine(width = 100.dp)
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    SkeletonBox(modifier = Modifier.weight(1f), height = 90.dp, shape = RoundedCornerShape(16.dp))
+                    SkeletonBox(modifier = Modifier.weight(1f), height = 90.dp, shape = RoundedCornerShape(16.dp))
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun WeatherTipSkeletonPreview() {
+    EcoWatssTheme() {
+        WeatherTipSkeleton()
+    }
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/components/WeatherInfoCard.kt">
+package br.com.fiap.EcoWatts.components
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import br.com.fiap.EcoWatts.model.WeatherTipData
+import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
+
+@Composable
+fun WeatherInfoCard(
+    data: WeatherTipData,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = data.backgroundColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = data.temperature,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                Text(
+                    text = data.locationInfo,
+                    color = Color.White.copy(alpha = 0.85f),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Icon(
+                imageVector = data.icon,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(48.dp)
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun WeatherInfoCardPreview() {
+    EcoWatssTheme {
+        WeatherInfoCard(
+            data = WeatherTipData(
+                temperature = "28°C",
+                locationInfo = "Boituva - SP • Vento 12 km/h",
+                icon = Icons.Default.WbSunny,
+                backgroundColor = Color(0xFFEF8C3C),
+                tips = emptyList()
+            )
+        )
+    }
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/components/WeatherTipsCarousel.kt">
+package br.com.fiap.EcoWatts.components
+
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Shower
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import br.com.fiap.EcoWatts.R
+import br.com.fiap.EcoWatts.model.EnergyTip
+import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
+
+@Composable
+fun WeatherTipsCarousel(
+    tips: List<EnergyTip>,
+    modifier: Modifier = Modifier,
+    cardColor: Color = MaterialTheme.colorScheme.primary
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = cardColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(modifier = Modifier.padding(vertical = 16.dp)) {
+            Text(
+                text = stringResource(R.string.tips_for_today),
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .height(IntrinsicSize.Max)
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                tips.forEach { tip ->
+                    TipItemCard(
+                        tip = tip,
+                        modifier = Modifier
+                            .width(260.dp)
+                            .fillMaxHeight()
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TipItemCard(tip: EnergyTip, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.15f)
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = tip.icon,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = tip.title,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 1
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = tip.message,
+                color = Color.White.copy(alpha = 0.9f),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun WeatherTipsCarouselPreview() {
+    EcoWatssTheme {
+        WeatherTipsCarousel(
+            tips = listOf(
+                EnergyTip(
+                    "Calor moderado",
+                    "Ajuste o ar-condicionado para 23°C — cada grau a menos aumenta bastante o consumo.",
+                    Icons.Default.Bolt
+                ),
+                EnergyTip(
+                    "Atenção ao chuveiro",
+                    "Dias frios aumentam o uso do chuveiro elétrico. Prefira banhos mais curtos.",
+                    Icons.Default.Shower
+                )
+            ),
+            cardColor = Color(0xFFEF8C3C)
+        )
+    }
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/factory/RetrofitFactory.kt">
+package br.com.fiap.EcoWatts.factory
+
+import br.com.fiap.EcoWatts.service.OpenMeteoApi
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+
+object RetrofitFactory {
+
+    private val loggingInterceptor = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
+    private val httpClient = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor)
+        .build()
+
+    private val retrofit = Retrofit.Builder()
+        .baseUrl("https://api.open-meteo.com/")
+        .client(httpClient)
+        .addConverterFactory(GsonConverterFactory.create()) // Avisa para usar o Gson
+        .build()
+
+    val weatherService: OpenMeteoApi = retrofit.create(OpenMeteoApi::class.java)
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/model/WeatherModels.kt">
+package br.com.fiap.EcoWatts.model
+import com.google.gson.annotations.SerializedName
+
+// Resposta principal da API de Geocodificação
+data class GeocodingResponse(
+    val results: List<LocationResult>?
+)
+
+// Os dados da cidade encontrada
+data class LocationResult(
+    val name: String,
+    val latitude: Double,
+    val longitude: Double,
+    val country: String,
+    @SerializedName("admin1")
+    val state: String?
+)
+
+data class WeatherResponse(
+    val latitude: Double,
+    val longitude: Double,
+    val current: CurrentWeather
+)
+
+// Os dados climáticos do momento
+data class CurrentWeather(
+    @SerializedName("temperature_2m")
+    val temperature: Double,
+
+    @SerializedName("relative_humidity_2m")
+    val humidity: Int,
+
+    @SerializedName("weather_code")
+    val weatherCode: Int,
+
+    @SerializedName("wind_speed_10m")
+    val windSpeed: Double
+)
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/model/WeatherTipModels.kt">
+package br.com.fiap.EcoWatts.model
+
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+
+data class EnergyTip(
+    val title: String,
+    val message: String,
+    val icon: ImageVector
+)
+
+data class WeatherTipData(
+    val temperature: String,
+    val locationInfo: String,
+    val icon: ImageVector,
+    val backgroundColor: Color,
+    val tips: List<EnergyTip>
+)
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/repository/UserRepository.kt">
+package br.com.fiap.EcoWatts.repository
+
+import br.com.fiap.EcoWatts.model.User
+
+interface UserRepository {
+    fun saveUser(user: User)
+    fun getUser(): User
+
+    fun getUser(id: Int): User
+    fun getUserByEmail(email: String): User?
+    fun login(email: String, password: String): User?
+
+    fun update(user: User): Int
+
+    fun delete(user: User): Int
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/repository/WeatherRepository.kt">
+package br.com.fiap.EcoWatts.repository // Ajuste o pacote
+
+import br.com.fiap.EcoWatts.model.CurrentWeather
+import android.util.Log
+import br.com.fiap.EcoWatts.factory.RetrofitFactory
+import br.com.fiap.EcoWatts.model.LocationResult
+
+class WeatherRepository {
+
+    private val api = RetrofitFactory.weatherService
+
+    suspend fun getWeatherForCity(cityName: String): Pair<CurrentWeather, LocationResult>? {
+        return try {
+            val geoResponse = api.searchCity(cityName = cityName)
+            val location = geoResponse.results?.firstOrNull()
+
+            if (location != null) {
+                val weatherResponse = api.getWeather(
+                    latitude = location.latitude,
+                    longitude = location.longitude
+                )
+
+                // Retorna o clima e a localização
+                Pair(weatherResponse.current, location)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/service/OpenMeteoService.kt">
+package br.com.fiap.EcoWatts.service
+
+import br.com.fiap.EcoWatts.model.GeocodingResponse
+import br.com.fiap.EcoWatts.model.WeatherResponse
+import retrofit2.http.GET
+import retrofit2.http.Query
+
+interface OpenMeteoApi {
+
+    // 1. Busca as coordenadas (Latitude/Longitude) pelo nome da cidade
+    @GET("https://geocoding-api.open-meteo.com/v1/search")
+    suspend fun searchCity(
+        @Query("name") cityName: String,
+        @Query("language") language: String = "pt",
+        @Query("count") count: Int = 1
+    ): GeocodingResponse
+
+    // Busca a previsão do tempo usando as coordenadas
+    @GET("https://api.open-meteo.com/v1/forecast")
+    suspend fun getWeather(
+        @Query("latitude") latitude: Double,
+        @Query("longitude") longitude: Double,
+        @Query("current") current: String = "temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m"
+    ): WeatherResponse
 }
 </file>
 
@@ -840,92 +1166,6 @@ fun EcoWatssTheme(
         content = content
     )
 }
-</file>
-
-<file path="app/src/main/java/br/com/fiap/EcoWatts/ui/theme/Type.kt">
-package br.com.fiap.EcoWatts.ui.theme
-
-import androidx.compose.material3.Typography
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-import br.com.fiap.EcoWatts.R
-
-// FONTE POPPINS
-val poppinsFamily = FontFamily(
-    Font(R.font.poppins_regular, FontWeight.Normal),
-    Font(R.font.poppins_semi_bold, FontWeight.SemiBold),
-    Font(R.font.poppins_bold, FontWeight.Bold)
-)
-
-// Set of Material typography styles to start with
-val Typography = Typography(
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    ),
-    bodySmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    ),
-    titleLarge = TextStyle(
-        fontFamily = poppinsFamily,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 40.sp,
-        lineHeight = 52.sp,
-        letterSpacing = 0.sp
-    ),
-    titleMedium = TextStyle(
-        fontFamily = poppinsFamily,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 36.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
-    ),
-    titleSmall = TextStyle(
-        fontFamily = poppinsFamily,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 16.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = poppinsFamily,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-        lineHeight = 100.sp,
-        letterSpacing = 0.5.sp
-    ),
-    labelMedium = TextStyle(
-        fontFamily = poppinsFamily,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 20.sp,
-        lineHeight = 100.sp,
-        letterSpacing = 0.5.sp
-    ),
-    displayMedium = TextStyle(
-        fontFamily = poppinsFamily,
-        fontWeight = FontWeight.Bold,
-        fontSize = 56.sp,
-        lineHeight = 60.sp,
-        letterSpacing = 0.5.sp
-    ),
-    displaySmall = TextStyle(
-        fontFamily = poppinsFamily,
-        fontWeight = FontWeight.Normal,
-        fontSize = 12.sp,
-        lineHeight = 100.sp,
-        letterSpacing = 0.5.sp
-    ),
-)
 </file>
 
 <file path="app/src/main/java/br/com/fiap/EcoWatts/MainActivity.kt">
@@ -1214,89 +1454,11 @@ class MainActivity : ComponentActivity() {
 </resources>
 </file>
 
-<file path="app/src/main/res/values/strings.xml">
-<resources>
-    <string name="app_name">EcoWatts</string>
-    <string name="smart_management">SMART CONTROL</string>
-    <string name="desc_smart_management">Monitor consumption, save on your bill, and reduce your environmental impact</string>
-    <string name="btn_login">Login</string>
-    <string name="btn_create_account">Sign Up</string>
-    <string name="login_subtitle">Smart energy for a better future</string>
-    <string name="login_title">Login</string>
-    <string name="your_email">Your Email</string>
-    <string name="your_password">Your Password</string>
-    <string name="sign_in">Sign In</string>
-    <string name="don_t_have_an_account">Don\'t have an account?</string>
-    <string name="error_authentication">Invalid email or password. Please try again</string>
-    <string name="sign_up">Sign up</string>
-
-    <string name="create_account">Create a new account</string>
-    <string name="user_image">User image</string>
-    <string name="camera_icon">Camera icon</string>
-    <string name="your_name">Your name</string>
-    <string name="person_icon">Person Icon</string>
-    <string name="email_icon">Email Icon</string>
-    <string name="remove_eye">Remove Eye</string>
-    <string name="invalid_name">invalid Name</string>
-    <string name="invalid_city">Invalid City</string>
-    <string name="invalid_email">invalid Email</string>
-    <string name="password_icon">Password icon</string>
-    <string name="hide_password">Hide password</string>
-    <string name="show_password">Show password</string>
-    <string name="already_have_an_account">Already have an account?</string>
-    <string name="your_city">Your City</string>
-    <string name="home">Home</string>
-    <string name="devices">Devices</string>
-    <string name="tips">Tips</string>
-
-</resources>
-</file>
-
 <file path="app/src/main/res/values/themes.xml">
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
     <style name="Theme.EcoBike" parent="android:Theme.Material.Light.NoActionBar" />
-</resources>
-</file>
-
-<file path="app/src/main/res/values-pt-rBR/strings.xml">
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">EcoWatts</string>
-    <string name="smart_management">Gestão Inteligente</string>
-    <string name="desc_smart_management">Monitore o consumo, economize na conta e reduza seu impacto ambiental</string>
-    <string name="btn_login">Entrar</string>
-    <string name="btn_create_account">Criar Conta</string>
-    <string name="login_subtitle">Energia inteligente para um futuro melhor</string>
-    <string name="login_title">Login</string>
-    <string name="your_email">Seu E-mail</string>
-    <string name="your_password">Sua Senha</string>
-    <string name="sign_in">Entrar</string>
-    <string name="don_t_have_an_account">Não tem uma conta?</string>
-    <string name="error_authentication">E-mail ou senha inválidos. Tente novamente</string>
-
-    <string name="sign_up">Cadastre-se</string>
-    <string name="create_account">Criar uma nova conta</string>
-    <string name="user_image">Imagem do usuário</string>
-    <string name="camera_icon">Ícone da câmera</string>
-    <string name="your_name">Seu nome</string>
-    <string name="person_icon">Ícone de pessoa</string>
-    <string name="email_icon">Ícone de e-mail</string>
-    <string name="remove_eye">Ocultar olho</string>
-    <string name="invalid_name">Nome inválido</string>
-    <string name="invalid_city">Cidade inválida</string>
-    <string name="invalid_email">E-mail inválido</string>
-    <string name="password_icon">Ícone de senha</string>
-    <string name="hide_password">Ocultar senha</string>
-    <string name="show_password">Mostrar senha</string>
-    <string name="already_have_an_account">Já tem uma conta?</string>
-    <string name="your_city">Sua Cidade</string>
-    <string name="home">Início</string>
-    <string name="devices">Aparelhos</string>
-    <string name="tips">Dicas</string>
-
-
 </resources>
 </file>
 
@@ -1336,37 +1498,6 @@ class MainActivity : ComponentActivity() {
     </device-transfer>
     -->
 </data-extraction-rules>
-</file>
-
-<file path="app/src/main/AndroidManifest.xml">
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
-
-    <application
-        android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.EcoBike">
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.EcoBike"
-            android:windowSoftInputMode="adjustResize">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-    </application>
-
-</manifest>
 </file>
 
 <file path="app/src/test/java/br/com/fiap/EcoWatts/ExampleUnitTest.kt">
@@ -1436,14 +1567,6 @@ toolchainVersion=25
 .externalNativeBuild
 .cxx
 local.properties
-</file>
-
-<file path="build.gradle.kts">
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.compose) apply false
-}
 </file>
 
 <file path="gradlew">
@@ -1826,41 +1949,1262 @@ rootProject.name = "EcoBike"
 include(":app")
 </file>
 
-<file path="app/src/main/java/br/com/fiap/EcoWatts/dao/EcoWattsDataBase.kt">
-package br.com.fiap.EcoWatts.dao
+<file path="app/src/main/java/br/com/fiap/EcoWatts/components/TopAppBar.kt">
+package br.com.fiap.EcoWatts.components
 
-import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import br.com.fiap.EcoWatts.model.Appliance
-import br.com.fiap.EcoWatts.model.ApplianceDao
-import br.com.fiap.EcoWatts.model.User
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import br.com.fiap.EcoWatts.R
+import br.com.fiap.EcoWatts.navigation.Destination
+import br.com.fiap.EcoWatts.repository.RoomUserRepository
+import br.com.fiap.EcoWatts.repository.SessionRepository
+import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
 
-@Database(entities = [User::class, Appliance::class], version = 3)
-abstract class EcoWattsDataBase: RoomDatabase() {
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EcoWattsTopAppBar(
+    title: String,
+    subtitle: String,
+    navController: NavController,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val sessionRepository = remember { SessionRepository(context) }
+    val userRepository = remember { RoomUserRepository(context) }
 
-    abstract fun userDao(): UserDao
-    abstract fun applianceDao(): ApplianceDao
+    var userImage by remember { mutableStateOf<ByteArray?>(null) }
 
-    companion object{
-        private lateinit var instance: EcoWattsDataBase
+    LaunchedEffect(Unit) {
+        val loggedInId = sessionRepository.getUserId()
 
-        fun getDatabase(context: Context): EcoWattsDataBase{
-            if (!::instance.isInitialized){
-                instance = Room
-                    .databaseBuilder(
-                        context,
-                        EcoWattsDataBase::class.java,
-                        "ecowatts_db"
-                    )
-                    .allowMainThreadQueries()
-                    .fallbackToDestructiveMigration(true)
-                    .build()
+        if (loggedInId != 0) {
+            val user = userRepository.getUser(loggedInId)
+
+            if (user != null) {
+                userImage = user.userImage
             }
-            return instance
         }
     }
+
+    val profileBitmap = remember(userImage) {
+        userImage?.let { bytes ->
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        }
+    }
+
+    TopAppBar(
+        modifier = modifier.fillMaxWidth(),
+        title = {
+            Row(
+                modifier = Modifier
+                    .padding(4.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Card(
+                    shape = CircleShape,
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clickable(onClick = {
+                            navController.navigate(Destination.ProfileScreen.route)
+                        })
+                ) {
+                    if (profileBitmap != null) {
+                        Image(
+                            bitmap = profileBitmap.asImageBitmap(),
+                            contentDescription = stringResource(R.string.user_image),
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(R.drawable.default_avatar),
+                            contentDescription = stringResource(R.string.user_image),
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Transparent
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun EcoWattsTopAppBarPreview() {
+    EcoWatssTheme {
+        EcoWattsTopAppBar(
+            title = "Olá, Gabriel!",
+            subtitle = "gabriel@email.com",
+            navController = rememberNavController()
+        )
+    }
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/dao/AppliancesDao.kt">
+package br.com.fiap.EcoWatts.model
+
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Update
+
+@Dao
+interface ApplianceDao {
+
+    @Insert
+    suspend fun insert(appliance: Appliance)
+
+    @Update
+    suspend fun update(appliance: Appliance)
+
+    @Delete
+    suspend fun delete(appliance: Appliance)
+
+    @Query("SELECT * FROM appliances WHERE userId = :userId")
+    suspend fun getAppliancesByUser(userId: Int): List<Appliance>
+
+    @Query("SELECT * FROM appliances WHERE id = :id")
+    suspend fun getApplianceById(id: Int): Appliance?
+
+    @Query("SELECT SUM(monthlyCost) FROM appliances WHERE userId = :userId")
+    suspend fun getTotalMonthlyCostByUser(userId: Int): Double?
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/repository/ApplianceRepository.kt">
+package br.com.fiap.EcoWatts.repository
+
+import br.com.fiap.EcoWatts.model.Appliance
+
+interface ApplianceRepository {
+
+    suspend fun insert(appliance: Appliance)
+
+    suspend fun update(appliance: Appliance)
+
+    suspend fun delete(appliance: Appliance)
+
+    suspend fun getAppliancesByUser(userId: Int): List<Appliance>
+
+    suspend fun getApplianceById(id: Int): Appliance?
+
+    suspend fun getTotalMonthlyCostByUser(userId: Int): Double
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/repository/RoomApplianceRepository.kt">
+package br.com.fiap.EcoWatts.repository
+
+import android.content.Context
+import br.com.fiap.EcoWatts.dao.EcoWattsDataBase
+import br.com.fiap.EcoWatts.model.Appliance
+
+class RoomApplianceRepository(context: Context) : ApplianceRepository {
+
+    private val applianceDao = EcoWattsDataBase.getDatabase(context).applianceDao()
+
+    override suspend fun insert(appliance: Appliance) {
+        applianceDao.insert(appliance)
+    }
+
+    override suspend fun update(appliance: Appliance) {
+        applianceDao.update(appliance)
+    }
+
+    override suspend fun delete(appliance: Appliance) {
+        applianceDao.delete(appliance)
+    }
+
+    override suspend fun getAppliancesByUser(userId: Int): List<Appliance> {
+        return applianceDao.getAppliancesByUser(userId)
+    }
+
+    override suspend fun getApplianceById(id: Int): Appliance? {
+        return applianceDao.getApplianceById(id)
+    }
+
+    override suspend fun getTotalMonthlyCostByUser(userId: Int): Double {
+        return applianceDao.getTotalMonthlyCostByUser(userId) ?: 0.0
+    }
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/screens/ProfileScreen.kt">
+package br.com.fiap.EcoWatts.screens
+
+import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import android.util.Patterns
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PinDrop
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import br.com.fiap.EcoWatts.R
+import br.com.fiap.EcoWatts.model.User
+import br.com.fiap.EcoWatts.navigation.Destination
+import br.com.fiap.EcoWatts.repository.RoomUserRepository
+import br.com.fiap.EcoWatts.repository.SessionRepository
+import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
+import br.com.fiap.EcoWatts.util.convertBitmapToByteArray
+import kotlinx.coroutines.launch
+
+@Composable
+fun ProfileScreen(navController: NavController) {
+
+    val context = LocalContext.current
+
+    val placeholderImage = remember {
+        BitmapFactory.decodeResource(context.resources, R.drawable.default_avatar)
+    }
+
+    var profileImage by remember { mutableStateOf<Bitmap>(placeholderImage) }
+
+    val launchImage = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            if (Build.VERSION.SDK_INT < 28) {
+                profileImage = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+            } else {
+                val source = ImageDecoder.createSource(context.contentResolver, uri)
+                profileImage = ImageDecoder.decodeBitmap(source)
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        TopEndCard(modifier = Modifier.align(Alignment.TopEnd))
+        BottomStartCard(modifier = Modifier.align(Alignment.BottomStart))
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            ProfileTitle()
+            Spacer(modifier = Modifier.height(48.dp))
+
+            UserImage(
+                profileImage = profileImage,
+                launchImage = launchImage
+            )
+            ProfileForm(navController, profileImage) { loadedImage ->
+                profileImage = loadedImage
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Composable
+private fun ProfileScreenPreview() {
+    EcoWatssTheme {
+        ProfileScreen(rememberNavController())
+    }
+}
+
+@Composable
+fun ProfileTitle(modifier: Modifier = Modifier) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Meu Perfil",
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.titleLarge
+        )
+        Text(
+            text = "Atualize seus dados",
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.titleSmall
+        )
+    }
+}
+
+@Composable
+fun ProfileForm(
+    navController: NavController,
+    profileImage: Bitmap,
+    onImageLoaded: (Bitmap) -> Unit
+) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val sessionRepository = remember { SessionRepository(context) }
+    val userRepository = remember { RoomUserRepository(context) }
+
+    var userId by remember { mutableStateOf(0) }
+
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var city by remember { mutableStateOf("") }
+
+    var isNameError by remember { mutableStateOf(false) }
+    var isEmailError by remember { mutableStateOf(false) }
+    var isCityError by remember { mutableStateOf(false) }
+    var isPasswordError by remember { mutableStateOf(false) }
+
+    var showDialogError by remember { mutableStateOf(false) }
+    var showDialogSuccess by remember { mutableStateOf(false) }
+    var showDialogLogout by remember { mutableStateOf(false) }
+
+    var showPassword by remember { mutableStateOf(false) }
+
+    // Carrega os dados atuais do usuário
+    LaunchedEffect(Unit) {
+        val loggedInId = sessionRepository.getUserId()
+        if (loggedInId != 0) {
+            val user = userRepository.getUser(loggedInId)
+            if (user != null) {
+                userId = user.id
+                name = user.name
+                email = user.email
+                password = user.password
+                city = user.city
+
+                user.userImage?.let { bytes ->
+                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                    onImageLoaded(bitmap)
+                }
+            }
+        }
+    }
+
+    fun validate(): Boolean {
+        isNameError = name.length < 3
+        isEmailError = email.length < 3 || !Patterns.EMAIL_ADDRESS.matcher(email).matches()
+        isCityError = city.length < 3
+        isPasswordError = password.length < 3
+        return !isNameError && !isEmailError && !isCityError && !isPasswordError
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(32.dp),
+        verticalArrangement = Arrangement.spacedBy(0.dp)
+    ) {
+
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.primary
+            ),
+            label = {
+                Text(text = "Nome", style = MaterialTheme.typography.labelSmall)
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.tertiary
+                )
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                capitalization = KeyboardCapitalization.Words,
+                imeAction = ImeAction.Next
+            ),
+            isError = isNameError,
+            trailingIcon = {
+                if (isNameError) {
+                    Icon(imageVector = Icons.Default.Error, contentDescription = "")
+                }
+            },
+            supportingText = {
+                if (isNameError) {
+                    Text(
+                        text = stringResource(R.string.invalid_name),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.End,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        )
+
+        OutlinedTextField(
+            value = city,
+            onValueChange = { city = it },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.primary
+            ),
+            label = {
+                Text(text = "Cidade", style = MaterialTheme.typography.labelSmall)
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.PinDrop,
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.tertiary
+                )
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                capitalization = KeyboardCapitalization.Words,
+                imeAction = ImeAction.Next
+            ),
+            isError = isCityError,
+            trailingIcon = {
+                if (isCityError) {
+                    Icon(imageVector = Icons.Default.Error, contentDescription = "")
+                }
+            },
+            supportingText = {
+                if (isCityError) {
+                    Text(
+                        text = stringResource(R.string.invalid_city),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.End,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        )
+
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.primary
+            ),
+            label = {
+                Text(text = "E-mail", style = MaterialTheme.typography.labelSmall)
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Email,
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.tertiary
+                )
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            ),
+            isError = isEmailError,
+            trailingIcon = {
+                if (isEmailError) {
+                    Icon(imageVector = Icons.Default.Error, contentDescription = "")
+                }
+            },
+            supportingText = {
+                if (isEmailError) {
+                    Text(
+                        text = stringResource(R.string.invalid_email),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.End,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        )
+
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.primary
+            ),
+            label = {
+                Text(text = "Senha", style = MaterialTheme.typography.labelSmall)
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.tertiary
+                )
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            isError = isPasswordError,
+            trailingIcon = {
+                val image =
+                    if (showPassword) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                IconButton(onClick = { showPassword = !showPassword }) {
+                    Icon(
+                        imageVector = image,
+                        contentDescription = "",
+                        tint = MaterialTheme.colorScheme.tertiary
+                    )
+                }
+            },
+            supportingText = {
+                if (isPasswordError) {
+                    Text(
+                        text = stringResource(R.string.invalid_password),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.End,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            visualTransformation = if (showPassword) VisualTransformation.None
+            else PasswordVisualTransformation()
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Button(
+            onClick = {
+                if (validate()) {
+                    coroutineScope.launch {
+                        val updatedUser = User(
+                            id = userId,
+                            name = name,
+                            email = email,
+                            password = password,
+                            city = city,
+                            userImage = convertBitmapToByteArray(profileImage)
+                        )
+
+                        userRepository.update(updatedUser)
+
+                        showDialogSuccess = true
+                    }
+                } else {
+                    showDialogError = true
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Text(text = "Salvar alterações", style = MaterialTheme.typography.labelMedium)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedButton(
+            onClick = { showDialogLogout = true },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Logout,
+                contentDescription = "",
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(text = "Sair da conta", style = MaterialTheme.typography.labelMedium)
+        }
+    }
+
+    // sucesso
+    if (showDialogSuccess) {
+        AlertDialog(
+            onDismissRequest = { showDialogSuccess = false },
+            title = { Text(text = "Sucesso") },
+            text = { Text(text = "Dados atualizados com sucesso") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDialogSuccess = false
+                    navController.navigate(Destination.HomeScreen.route)
+                }) {
+                    Text(text = "Ok",style = MaterialTheme.typography.labelMedium)
+                }
+            }
+        )
+    }
+
+    // erro
+    if (showDialogError) {
+        AlertDialog(
+            onDismissRequest = { showDialogError = false },
+            title = { Text(text = "Erro") },
+            text = { Text(text = "Preencha todos os campos corretamente") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDialogError = false
+                }) {
+                    Text("Ok")
+                }
+            }
+        )
+    }
+
+    // confirmação de logout
+    if (showDialogLogout) {
+        AlertDialog(
+            onDismissRequest = { showDialogLogout = false },
+            title = { Text(text = "Sair da conta") },
+            text = { Text(text = "Tem certeza que deseja sair?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDialogLogout = false
+                        sessionRepository.logout()
+                        navController.navigate(Destination.InitialScreen.route) {
+                            popUpTo(0)
+                        }
+                    }
+                ) {
+                    Text(text = "Sair", color = MaterialTheme.colorScheme.error,style = MaterialTheme.typography.labelMedium)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialogLogout = false }) {
+                    Text(text = "Cancelar",style = MaterialTheme.typography.labelMedium)
+                }
+            }
+        )
+    }
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/util/Formatters.kt">
+package br.com.fiap.EcoWatts.util
+
+import br.com.fiap.EcoWatts.model.Appliance
+import java.text.NumberFormat
+import java.util.Locale
+
+fun formatPotencia(potenciaWatts: Double): String {
+    val valor = if (potenciaWatts == potenciaWatts.toLong().toDouble()) {
+        potenciaWatts.toLong().toString()
+    } else {
+        String.format(Locale("pt", "BR"), "%.1f", potenciaWatts)
+    }
+    return "$valor W"
+}
+
+fun formatHorasDia(horasDia: Double): String {
+    val sufixo = if (horasDia == 1.0) "hora/dia" else "horas/dia"
+    val valor = if (horasDia == horasDia.toLong().toDouble()) {
+        horasDia.toLong().toString()
+    } else {
+        String.format(Locale("pt", "BR"), "%.1f", horasDia)
+    }
+    return "$valor $sufixo"
+}
+
+fun formatConsumoKwh(consumoMensalKwh: Double): String {
+    val valor = if (consumoMensalKwh == consumoMensalKwh.toLong().toDouble()) {
+        consumoMensalKwh.toLong().toString()
+    } else {
+        String.format(Locale("pt", "BR"), "%.1f", consumoMensalKwh)
+    }
+    return "$valor kWh/mês"
+}
+
+fun formatCurrencyBRL(valor: Double): String {
+    val formatter = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
+    return formatter.format(valor)
+}
+
+fun Appliance.monthlyConsumptionKwh(): Double {
+    return (powerWatts * hoursOfUsePerDay * 30) / 1000.0
+}
+</file>
+
+<file path="app/src/main/AndroidManifest.xml">
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.EcoBike">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.EcoBike"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/model/Appliances.kt">
+package br.com.fiap.EcoWatts.model
+
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
+import androidx.room.PrimaryKey
+
+@Entity(
+    tableName = "appliances",
+    foreignKeys = [
+        ForeignKey(
+            entity = User::class,
+            parentColumns = ["id"],
+            childColumns = ["userId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index("userId")]
+)
+data class Appliance(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val name: String,
+    val powerWatts: Double,
+    val hoursOfUsePerDay: Double,
+    val monthlyCost: Double,
+    val userId: Int
+)
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/screens/AppliancesScreen.kt">
+package br.com.fiap.EcoWatts.screens
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import br.com.fiap.EcoWatts.R
+import br.com.fiap.EcoWatts.components.ButtomAppBar
+import br.com.fiap.EcoWatts.components.EcoWattsTopAppBar
+import br.com.fiap.EcoWatts.model.Appliance
+import br.com.fiap.EcoWatts.navigation.Destination
+import br.com.fiap.EcoWatts.repository.RoomApplianceRepository
+import br.com.fiap.EcoWatts.repository.SessionRepository
+import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
+import br.com.fiap.EcoWatts.util.formatConsumoKwh
+import br.com.fiap.EcoWatts.util.formatCurrencyBRL
+import br.com.fiap.EcoWatts.util.formatHorasDia
+import br.com.fiap.EcoWatts.util.formatPotencia
+import br.com.fiap.EcoWatts.util.monthlyConsumptionKwh
+import kotlinx.coroutines.launch
+
+@Composable
+fun AppliancesScreen(navController: NavController) {
+    val context = LocalContext.current
+    val sessionRepository = remember { SessionRepository(context) }
+    val applianceRepository = remember { RoomApplianceRepository(context) }
+    val coroutineScope = rememberCoroutineScope()
+
+    var aparelhos by remember { mutableStateOf(listOf<Appliance>()) }
+    var aparelhoSelecionado by remember { mutableStateOf<Appliance?>(null) }
+    var aparelhoParaExcluir by remember { mutableStateOf<Appliance?>(null) }
+    var refreshTrigger by remember { mutableStateOf(0) }
+
+    LaunchedEffect(refreshTrigger) {
+        val userId = sessionRepository.getUserId()
+        aparelhos = applianceRepository.getAppliancesByUser(userId)
+    }
+
+    Scaffold(
+        topBar = {
+            EcoWattsTopAppBar(
+                title = stringResource(R.string.my_appliances),
+                subtitle = stringResource(R.string.track_your_energy_consumption),
+                navController = navController
+            )
+        },
+        bottomBar = { ButtomAppBar(navController, "appliances") },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    navController.navigate(Destination.AddApplianceScreen.route)
+                },
+                shape = CircleShape,
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar aparelho")
+            }
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            if (aparelhos.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Nenhum aparelho cadastrado.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(
+                        onClick = {
+                            navController.navigate(Destination.AddApplianceScreen.route)
+                        }
+                    ) {
+                        Text(text = "Adicionar primeiro aparelho")
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(aparelhos, key = { it.id }) { aparelho ->
+                        AparelhoCard(
+                            aparelho = aparelho,
+                            onClick = { aparelhoSelecionado = aparelho }
+                        )
+                    }
+                    item { Spacer(modifier = Modifier.height(72.dp)) }
+                }
+            }
+        }
+    }
+
+    aparelhoSelecionado?.let { aparelho ->
+        AparelhoDetailDialog(
+            aparelho = aparelho,
+            onDismiss = { aparelhoSelecionado = null },
+            onEdit = {
+                aparelhoSelecionado = null
+                navController.navigate(Destination.AddApplianceScreen.route)
+            },
+            onDelete = {
+                aparelhoSelecionado = null
+                aparelhoParaExcluir = aparelho
+            }
+        )
+    }
+
+    aparelhoParaExcluir?.let { aparelho ->
+        AlertDialog(
+            onDismissRequest = { aparelhoParaExcluir = null },
+            title = { Text(text = "Excluir aparelho") },
+            text = { Text(text = "Deseja realmente excluir \"${aparelho.name}\"?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            applianceRepository.delete(aparelho)
+                            aparelhoParaExcluir = null
+                            refreshTrigger++
+                        }
+                    }
+                ) {
+                    Text(text = "Excluir", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { aparelhoParaExcluir = null }) {
+                    Text(text = "Cancelar")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun AparelhoCard(aparelho: Appliance, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Bolt,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = aparelho.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = formatPotencia(aparelho.powerWatts),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = formatHorasDia(aparelho.hoursOfUsePerDay),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = formatConsumoKwh(aparelho.monthlyConsumptionKwh()),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = "${formatCurrencyBRL(aparelho.monthlyCost)}/mês",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AparelhoDetailDialog(
+    aparelho: Appliance,
+    onDismiss: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = aparelho.name) },
+        text = {
+            Column {
+                Text(text = formatPotencia(aparelho.powerWatts))
+                Text(text = formatHorasDia(aparelho.hoursOfUsePerDay))
+                Text(
+                    text = formatConsumoKwh(aparelho.monthlyConsumptionKwh()),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(text = "${formatCurrencyBRL(aparelho.monthlyCost)}/mês")
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onEdit) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = "Editar")
+            }
+        },
+        dismissButton = {
+            Row {
+                TextButton(onClick = onDelete) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = "Excluir", color = MaterialTheme.colorScheme.error)
+                }
+                TextButton(onClick = onDismiss) {
+                    Text(text = "Fechar")
+                }
+            }
+        }
+    )
+}
+
+@Preview
+@Composable
+private fun AppliancesScreenPreview() {
+    EcoWatssTheme {
+        AppliancesScreen(rememberNavController())
+    }
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/ui/theme/Type.kt">
+package br.com.fiap.EcoWatts.ui.theme
+
+import androidx.compose.material3.Typography
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import br.com.fiap.EcoWatts.R
+
+// FONTE POPPINS
+val poppinsFamily = FontFamily(
+    Font(R.font.poppins_regular, FontWeight.Normal),
+    Font(R.font.poppins_semi_bold, FontWeight.SemiBold),
+    Font(R.font.poppins_bold, FontWeight.Bold)
+)
+
+// Set of Material typography styles to start with
+val Typography = Typography(
+    bodyLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    ),
+    bodySmall = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    ),
+    titleLarge = TextStyle(
+        fontFamily = poppinsFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 40.sp,
+        lineHeight = 52.sp,
+        letterSpacing = 0.sp
+    ),
+    titleMedium = TextStyle(
+        fontFamily = poppinsFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 36.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.sp
+    ),
+    titleSmall = TextStyle(
+        fontFamily = poppinsFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 16.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.sp
+    ),
+    labelSmall = TextStyle(
+        fontFamily = poppinsFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp,
+        lineHeight = 100.sp,
+        letterSpacing = 0.5.sp
+    ),
+    labelMedium = TextStyle(
+        fontFamily = poppinsFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 20.sp,
+        lineHeight = 100.sp,
+        letterSpacing = 0.5.sp
+    ),
+    headlineMedium = TextStyle(
+        fontFamily = poppinsFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 28.sp,
+        lineHeight = 34.sp,
+        letterSpacing = 0.5.sp
+    ),
+    displayMedium = TextStyle(
+        fontFamily = poppinsFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 56.sp,
+        lineHeight = 60.sp,
+        letterSpacing = 0.5.sp
+    ),
+    displaySmall = TextStyle(
+        fontFamily = poppinsFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        lineHeight = 100.sp,
+        letterSpacing = 0.5.sp
+    ),
+)
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/util/Image.kt">
+package br.com.fiap.EcoWatts.util
+
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import java.io.ByteArrayOutputStream
+
+fun convertBitmapToByteArray(bitmap: Bitmap): ByteArray{
+    val outputStream = ByteArrayOutputStream()
+    bitmap.compress(
+        Bitmap.CompressFormat.JPEG,
+        75,
+        outputStream
+    )
+    return outputStream.toByteArray()
+}
+
+fun convertByteArrayToBitmap(imageArray: ByteArray): Bitmap{
+    return BitmapFactory
+        .decodeByteArray(
+            imageArray,
+            0,
+            imageArray.size
+        )
+}
+</file>
+
+<file path="build.gradle.kts">
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.compose) apply false
 }
 </file>
 
@@ -1924,6 +3268,48 @@ data class User(
 )
 </file>
 
+<file path="app/src/main/java/br/com/fiap/EcoWatts/repository/RoomUserRepository.kt">
+package br.com.fiap.EcoWatts.repository
+
+import android.content.Context
+import br.com.fiap.EcoWatts.dao.EcoWattsDataBase
+import br.com.fiap.EcoWatts.dao.UserDao
+import br.com.fiap.EcoWatts.model.User
+
+class RoomUserRepository(context: Context): UserRepository {
+
+    private val ecoWattsDataBase = EcoWattsDataBase.getDatabase(context).userDao()
+    override fun saveUser(user: User) {
+        ecoWattsDataBase.save(user);
+    }
+
+    override fun getUser(id: Int): User {
+        return ecoWattsDataBase.getUserById(id) ?: User()
+    }
+
+    override fun getUser(): User {
+        TODO("Not yet implemented")
+    }
+
+    override fun getUserByEmail(email: String): User? {
+        return ecoWattsDataBase.getUserByEmail(email)
+    }
+
+    override fun login(email: String, password: String): User? {
+        return ecoWattsDataBase.login(email, password)
+    }
+
+    override fun update(user: User): Int {
+        return ecoWattsDataBase.update(user)
+    }
+
+    override fun delete(user: User): Int {
+        return ecoWattsDataBase.delete(user)
+    }
+
+}
+</file>
+
 <file path="app/src/main/java/br/com/fiap/EcoWatts/repository/SessionRepository.kt">
 package br.com.fiap.EcoWatts.repository
 
@@ -1947,223 +3333,332 @@ class SessionRepository(context: Context) {
 }
 </file>
 
-<file path="app/src/main/java/br/com/fiap/EcoWatts/navigation/NavigationRoutes.kt">
-package br.com.fiap.EcoWatts.navigation
-
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import br.com.fiap.EcoWatts.repository.SessionRepository
-import br.com.fiap.EcoWatts.screens.AddApplianceScreen
-import br.com.fiap.EcoWatts.screens.HomeScreen
-import br.com.fiap.EcoWatts.screens.InitialScreen
-import br.com.fiap.EcoWatts.screens.LoginScreen
-import br.com.fiap.EcoWatts.screens.SignupScreen
-
-@Composable
-fun NavigationRoutes() {
-    val navController = rememberNavController();
-
-    val context = LocalContext.current
-    val sessionRepository = SessionRepository(context)
-
-    // Verificamos se está alguém logado
-    val isUserLoggedIn = sessionRepository.getUserId() != 0
-
-    val startScreen = if (isUserLoggedIn) {
-        Destination.HomeScreen.route
-    } else {
-        Destination.InitialScreen.route
-    }
-
-    NavHost(
-        navController = navController,
-        startDestination = startScreen
-    ) {
-        composable(Destination.InitialScreen.route){ InitialScreen(navController) }
-        composable(Destination.HomeScreen.route){ HomeScreen(navController) }
-        composable(Destination.SignupScreen.route) { SignupScreen(navController) }
-        composable(Destination.LoginScreen.route) { LoginScreen(navController) }
-        composable(Destination.AddApplianceScreen.route) { AddApplianceScreen(navController) }
-    }
-}
-</file>
-
-<file path="app/src/main/java/br/com/fiap/EcoWatts/screens/DecorationComponents.kt">
+<file path="app/src/main/java/br/com/fiap/EcoWatts/screens/AddApplianceScreen.kt">
 package br.com.fiap.EcoWatts.screens
 
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
-
-@Composable
-fun TopEndCard(modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier
-            .width(160.dp)
-            .height(85.dp),
-        shape = RoundedCornerShape(bottomStart = 40.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)
-    ) { }
-}
-
-@Preview
-@Composable
-private fun TopEndCardPreview() {
-    EcoWatssTheme {
-        TopEndCard() // Corrigido para chamar o componente correto
-    }
-}
-
-@Composable
-fun BottomStartCard(modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier
-            .width(160.dp)
-            .height(85.dp),
-        shape = RoundedCornerShape(topEnd = 40.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)
-    ) { }
-}
-
-@Preview
-@Composable
-private fun BottomStartCardPreview() {
-    EcoWatssTheme {
-        BottomStartCard() // Corrigido para chamar o componente correto
-    }
-}
-</file>
-
-<file path="app/src/main/java/br/com/fiap/EcoWatts/screens/HomeScreen.kt">
-package br.com.fiap.EcoWatts.screens
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Devices
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import br.com.fiap.EcoWatts.components.ButtomAppBar
+import br.com.fiap.EcoWatts.model.Appliance
 import br.com.fiap.EcoWatts.navigation.Destination
+import br.com.fiap.EcoWatts.repository.RoomApplianceRepository
 import br.com.fiap.EcoWatts.repository.RoomUserRepository
 import br.com.fiap.EcoWatts.repository.SessionRepository
 import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
+import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
-
+fun AddApplianceScreen(navController: NavController) {
     val context = LocalContext.current
-    val sessionRepository = remember { SessionRepository(context) }
-    val userRepository = remember { RoomUserRepository(context) }
+    val sessionRepository = SessionRepository(context)
+    val userRepository = RoomUserRepository(context)
+    val applianceRepository = RoomApplianceRepository(context)
+    val coroutineScope = rememberCoroutineScope()
 
-    var userName by remember { mutableStateOf("Carregando...") }
-    var userEmail by remember { mutableStateOf("") }
+    var nome by remember { mutableStateOf("") }
+    var potencia by remember { mutableStateOf("") }
+    var horasPorDia by remember { mutableStateOf("") }
 
-    LaunchedEffect(Unit) {
-        val loggedInId = sessionRepository.getUserId()
+    // Estados de erro
+    var isNomeError by remember { mutableStateOf(false) }
+    var isPotenciaError by remember { mutableStateOf(false) }
+    var isHorasError by remember { mutableStateOf(false) }
 
-        if (loggedInId != 0) {
-            val user = userRepository.getUser(loggedInId)
+    var showDialogError by remember { mutableStateOf(false) }
+    var showDialogSuccess by remember { mutableStateOf(false) }
 
-            // Atualiza os textos da tela
-            userName = user.name
-            userEmail = user.email
-        }
+    fun validate(): Boolean {
+        isNomeError = nome.isBlank()
+        isPotenciaError = potencia.toDoubleOrNull() == null || (potencia.toDoubleOrNull() ?: 0.0) <= 0.0
+        isHorasError = horasPorDia.toDoubleOrNull() == null || (horasPorDia.toDoubleOrNull() ?: 0.0) <= 0.0 || (horasPorDia.toDoubleOrNull() ?: 0.0) > 24.0
+        return !isNomeError && !isPotenciaError && !isHorasError
     }
 
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        Scaffold(
-            topBar = {
-                Text(
-                    text = "Bem-vindo(a), $userName!",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier  = Modifier.padding(10.dp)
-                )
-            },
-            bottomBar = { ButtomAppBar(navController, "tela_home") },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = {navController.navigate(Destination.AddApplianceScreen.route)},
-                    shape = CircleShape,
-                    containerColor = MaterialTheme.colorScheme.primary
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add button"
-                    )
-                }
-            },
-        ) { paddingValues ->
+    Scaffold(
+        bottomBar = {
+//            BottomAppBar(navController = navController, rotaAtual = "tela_adicionar")
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
             Column(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp)
+                    .align(Alignment.Center),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "TELA HOME",
-                    style = MaterialTheme.typography.headlineLarge
+                    text = "Cadastrar Aparelho",
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.titleLarge
                 )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
                 Text(
-                    text = userEmail,
-                    style = MaterialTheme.typography.bodyLarge
+                    text = "Informe os dados para calcular o custo mensal",
+                    color = MaterialTheme.colorScheme.secondary,
+                    style = MaterialTheme.typography.titleSmall,
+                    textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(48.dp))
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Campo Nome do Aparelho
+                OutlinedTextField(
+                    value = nome,
+                    onValueChange = { nome = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    ),
+                    label = { Text(text = "Nome do Aparelho", style = MaterialTheme.typography.labelSmall) },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Devices,
+                            contentDescription = "",
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Next
+                    ),
+                    isError = isNomeError,
+                    trailingIcon = {
+                        if (isNomeError) {
+                            Icon(imageVector = Icons.Default.Error, contentDescription = "")
+                        }
+                    },
+                    supportingText = {
+                        if (isNomeError) {
+                            Text(
+                                text = "Informe um nome válido",
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.End,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Campo Potência (Watts)
+                OutlinedTextField(
+                    value = potencia,
+                    onValueChange = { potencia = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    ),
+                    label = { Text(text = "Potência (Watts)", style = MaterialTheme.typography.labelSmall) },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Bolt,
+                            contentDescription = "",
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
+                    ),
+                    isError = isPotenciaError,
+                    trailingIcon = {
+                        if (isPotenciaError) {
+                            Icon(imageVector = Icons.Default.Error, contentDescription = "")
+                        }
+                    },
+                    supportingText = {
+                        if (isPotenciaError) {
+                            Text(
+                                text = "Informe um valor em Watts válido",
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.End,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Campo Horas de uso por dia
+                OutlinedTextField(
+                    value = horasPorDia,
+                    onValueChange = { horasPorDia = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                    ),
+                    label = { Text(text = "Horas de uso por dia", style = MaterialTheme.typography.labelSmall) },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Schedule,
+                            contentDescription = "",
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
+                    isError = isHorasError,
+                    trailingIcon = {
+                        if (isHorasError) {
+                            Icon(imageVector = Icons.Default.Error, contentDescription = "")
+                        }
+                    },
+                    supportingText = {
+                        if (isHorasError) {
+                            Text(
+                                text = "Informe entre 1 e 24 horas",
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.End,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
                     onClick = {
-                        sessionRepository.logout()
+                        if (validate()) {
+                            val userId = sessionRepository.getUserId()
+                            val user = userRepository.getUser(userId)
+                            val precoKwh = user?.precoKwh ?: 0.8
 
-                        navController.navigate(Destination.InitialScreen.route) {
-                            popUpTo(0)
+                            val w = potencia.toDouble()
+                            val h = horasPorDia.toDouble()
+
+                            // Fórmula: (Watts * Horas * 30 dias / 1000) * Preço_do_kWh
+                            val custoMensal = ((w * h * 30) / 1000.0) * precoKwh
+
+                            coroutineScope.launch {
+                                applianceRepository.insert(
+                                    Appliance(
+                                        name = nome,
+                                        powerWatts = w,
+                                        hoursOfUsePerDay = h,
+                                        monthlyCost = custoMensal,
+                                        userId = userId
+                                    )
+                                )
+                                showDialogSuccess = true
+                            }
+                        } else {
+                            showDialogError = true
                         }
-                    }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(text = "Sair")
+                    Text(
+                        text = "Salvar Aparelho",
+                        style = MaterialTheme.typography.labelMedium
+                    )
                 }
             }
         }
     }
+
+    // Dialogo de Sucesso
+    if (showDialogSuccess) {
+        AlertDialog(
+            onDismissRequest = { showDialogSuccess = false },
+            title = { Text(text = "Sucesso") },
+            text = { Text(text = "Aparelho cadastrado e calculado com sucesso!") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDialogSuccess = false
+                        navController.navigate(Destination.HomeScreen.route) {
+                            popUpTo(Destination.HomeScreen.route) { inclusive = true }
+                        }
+                    }
+                ) {
+                    Text(text = "Ok")
+                }
+            }
+        )
+    }
+
+    // Dialogo de Erro
+    if (showDialogError) {
+        AlertDialog(
+            onDismissRequest = { showDialogError = false },
+            title = { Text(text = "Erro de Validação") },
+            text = { Text(text = "Por favor, preencha todos os campos corretamente.") },
+            confirmButton = {
+                TextButton(
+                    onClick = { showDialogError = false }
+                ) {
+                    Text("Ok")
+                }
+            }
+        )
+    }
 }
 
-@Preview
+@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Composable
-private fun HomeScreenPreview() {
-    EcoWatssTheme() {
-        HomeScreen(rememberNavController())
+private fun AddApplianceScreenPreview() {
+    EcoWatssTheme {
+        AddApplianceScreen(rememberNavController())
     }
 }
 </file>
@@ -2198,11 +3693,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import br.com.fiap.EcoWatts.R
 import br.com.fiap.EcoWatts.navigation.Destination
 import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
 import br.com.fiap.EcoWatts.ui.theme.SoftBackgroundPrimary
 import br.com.fiap.EcoWatts.ui.theme.SoftBackgroundSecondary
+import br.com.fiap.EcoWatts.R
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -2342,117 +3837,6 @@ private fun HouseAnimatePreview() {
 }
 </file>
 
-<file path="app/build.gradle.kts">
-plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.compose)
-}
-
-android {
-    namespace = "br.com.fiap.EcoWatts"
-    compileSdk {
-        version = release(37)
-    }
-
-    defaultConfig {
-        applicationId = "br.com.fiap.ecowatts"
-        minSdk = 28
-        targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    buildTypes {
-        release {
-            optimization {
-                enable = false
-            }
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    buildFeatures {
-        compose = true
-    }
-}
-
-dependencies {
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    testImplementation(libs.junit)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.junit)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
-    debugImplementation(libs.androidx.compose.ui.tooling)
-
-    implementation("com.airbnb.android:lottie-compose:6.7.1")
-
-    implementation("androidx.compose.material:material-icons-extended-android:1.7.8")
-
-    // Dependências do Navigation Compose
-    // e Kotlinx Serialization Json
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.kotlinx.serialization.json)
-}
-</file>
-
-<file path="gradle/libs.versions.toml">
-[versions]
-agp = "9.3.2"
-coreKtx = "1.19.0"
-junit = "4.13.2"
-junitVersion = "1.3.0"
-espressoCore = "3.7.0"
-lifecycleRuntimeKtx = "2.11.0"
-activityCompose = "1.13.0"
-kotlin = "2.2.10"
-composeBom = "2026.02.01"
-
-# Versões do Navigation Compose
-navigationCompose = "2.9.0"
-kotlinxSerialization = "1.6.3"
-
-[libraries]
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
-androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
-androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
-androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
-androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
-androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
-androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
-androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
-
-
-# Bibliotecas do Navigation Compose
-# e Kotlinx Serialization Json
-# com as versões definidas na seção [versions]
-androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
-
-[plugins]
-android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-</file>
-
 <file path="gradle.properties">
 # Project-wide Gradle settings.
 # IDE (e.g. Android Studio) users:
@@ -2473,6 +3857,142 @@ org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
 org.gradle.configuration-cache=true
 # Kotlin code style for this project: "official" or "obsolete":
 kotlin.code.style=official
+android.disallowKotlinSourceSets=false
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/components/ButtomAppBar.kt">
+package br.com.fiap.EcoWatts.components
+
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import br.com.fiap.EcoWatts.R
+import br.com.fiap.EcoWatts.navigation.Destination
+import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
+
+data class BottomNavigationItem(
+    val title: String,
+    val icon: ImageVector,
+    val route: String
+)
+
+@Composable
+fun ButtomAppBar(
+    navController: NavController,
+    currentRoute: String,
+    modifier: Modifier = Modifier
+) {
+    val items = listOf(
+        BottomNavigationItem(stringResource(R.string.home), icon = Icons.Default.Home, route = Destination.HomeScreen.route),
+        BottomNavigationItem(stringResource(R.string.appliances), icon = Icons.Default.List, route = Destination.AppliancesScreen.route),
+        BottomNavigationItem(stringResource(R.string.tips), icon = Icons.Default.Lightbulb, route = Destination.HomeScreen.route),
+    )
+
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.secondary
+    ) {
+        items.forEach { item ->
+            val isSelected = currentRoute == item.route
+
+            NavigationBarItem(
+                selected = isSelected,
+                onClick = {
+                    if (!isSelected) {
+                        navController.navigate(item.route) {
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                },
+                icon = {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = item.title,
+                        modifier = Modifier.size(24.dp)
+                    )
+                },
+                label = {
+                    Text(
+                        text = item.title,
+                        style = MaterialTheme.typography.displaySmall
+                    )
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.onSecondary,
+                    selectedTextColor = MaterialTheme.colorScheme.onSecondary,
+                    indicatorColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.6f),
+                    unselectedTextColor = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.6f)
+                )
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ButtomAppBarPreview() {
+    EcoWatssTheme() {
+        ButtomAppBar(rememberNavController(),"")
+    }
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/dao/EcoWattsDataBase.kt">
+package br.com.fiap.EcoWatts.dao
+
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import br.com.fiap.EcoWatts.model.Appliance
+import br.com.fiap.EcoWatts.model.ApplianceDao
+import br.com.fiap.EcoWatts.model.User
+
+@Database(entities = [User::class, Appliance::class], version = 3)
+abstract class EcoWattsDataBase: RoomDatabase() {
+
+    abstract fun userDao(): UserDao
+    abstract fun applianceDao(): ApplianceDao
+
+    companion object{
+        private lateinit var instance: EcoWattsDataBase
+
+        fun getDatabase(context: Context): EcoWattsDataBase{
+            if (!::instance.isInitialized){
+                instance = Room
+                    .databaseBuilder(
+                        context,
+                        EcoWattsDataBase::class.java,
+                        "ecowatts_db"
+                    )
+                    .allowMainThreadQueries()
+                    .fallbackToDestructiveMigration(true)
+                    .build()
+            }
+            return instance
+        }
+    }
+}
 </file>
 
 <file path="app/src/main/java/br/com/fiap/EcoWatts/screens/LoginScreen.kt">
@@ -2510,6 +4030,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -2522,6 +4043,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.fiap.EcoWatts.R
 import br.com.fiap.EcoWatts.navigation.Destination
+import br.com.fiap.EcoWatts.repository.RoomUserRepository
+import br.com.fiap.EcoWatts.repository.SessionRepository
 import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
 
 @Composable
@@ -2530,7 +4053,7 @@ fun LoginScreen(navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background)
-    ){
+    ) {
         TopEndCard(modifier = Modifier.align(Alignment.TopEnd))
         BottomStartCard(modifier = Modifier.align(Alignment.BottomStart))
         Column(
@@ -2549,7 +4072,7 @@ fun LoginScreen(navController: NavController) {
 @Preview
 @Composable
 private fun LoginSrceenPreview() {
-    EcoWatssTheme{
+    EcoWatssTheme {
         LoginScreen(rememberNavController())
     }
 }
@@ -2558,7 +4081,7 @@ private fun LoginSrceenPreview() {
 fun LoginTitle(modifier: Modifier = Modifier) {
     Column(
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment =  Alignment.Start,
+        horizontalAlignment = Alignment.Start,
         modifier = Modifier
             .fillMaxWidth()
             .padding(32.dp)
@@ -2579,7 +4102,7 @@ fun LoginTitle(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun LoginTitlePreview() {
-    EcoWatssTheme  {
+    EcoWatssTheme {
         LoginTitle()
     }
 }
@@ -2600,6 +4123,10 @@ fun LoginForm(navController: NavController) {
         mutableStateOf(false)
     }
 
+    val context = LocalContext.current
+
+    val userRepository = RoomUserRepository(context)
+    val sessionRepository = SessionRepository(context)
 
     Column(
         modifier = Modifier
@@ -2673,7 +4200,7 @@ fun LoginForm(navController: NavController) {
                     Icons.Default.VisibilityOff
                 }
                 IconButton(
-                    onClick = {showPassword.value = !showPassword.value}
+                    onClick = { showPassword.value = !showPassword.value }
                 ) {
                     Icon(
                         imageVector = image,
@@ -2693,28 +4220,26 @@ fun LoginForm(navController: NavController) {
         Spacer(modifier = Modifier.height(32.dp))
         Button(
             onClick = {
-//                val authenticate =
-//                    userRepository.login(emailState.value, passwordState.value)
-//                if (authenticate) {
-//                    navController.navigate(
-//                        Destination.HomeScreen.createRoute(emailState.value)
-//                    )
-//                } else {
-//                    authenticateError.value = true
-//                }
+                val user = userRepository.login(emailState.value, passwordState.value)
+                if (user != null) {
+                    sessionRepository.saveUserId(user.id)
+                    navController.navigate(Destination.HomeScreen.route)
+                } else {
+                    authenticateError.value = true
+                }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp),
-            shape = RoundedCornerShape(8.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp),
+        shape = RoundedCornerShape(8.dp)
         ) {
-            Text(
-                text = stringResource(R.string.sign_in),
-                style = MaterialTheme.typography.labelMedium
-            )
-        }
+        Text(
+            text = stringResource(R.string.sign_in),
+            style = MaterialTheme.typography.labelMedium
+        )
+    }
         Spacer(modifier = Modifier.height(16.dp))
-        if (authenticateError.value){
+        if (authenticateError.value) {
             Row {
                 Icon(
                     imageVector = Icons.Default.Error,
@@ -2753,13 +4278,130 @@ fun LoginForm(navController: NavController) {
         }
     }
 }
+
 @Preview(
     showBackground = true
 )
 @Composable
 private fun LoginFormScreen() {
-    EcoWatssTheme  {
+    EcoWatssTheme {
         LoginForm(rememberNavController())
+    }
+}
+</file>
+
+<file path="gradle/libs.versions.toml">
+[versions]
+agp = "9.3.1"
+coreKtx = "1.10.1"
+junit = "4.13.2"
+junitVersion = "1.1.5"
+espressoCore = "3.5.1"
+lifecycleRuntimeKtx = "2.6.1"
+activityCompose = "1.8.0"
+kotlin = "2.2.10"
+composeBom = "2026.02.01"
+navigationCompose = "2.9.0"
+
+#ROOM
+ksp = "2.2.10-2.0.2"
+roomRuntime = "2.7.2"
+
+[libraries]
+
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+# Navigation Compose
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose"}
+
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp"}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/navigation/ScreenRoutes.kt">
+package br.com.fiap.EcoWatts.navigation
+
+sealed class Destination(val route: String){
+    object InitialScreen: Destination("initial")
+    object SignupScreen: Destination("signup")
+    object HomeScreen: Destination("home")
+    object LoginScreen: Destination("login")
+    object AddApplianceScreen : Destination("add_appliance")
+
+    object AppliancesScreen : Destination("appliances")
+
+    object ProfileScreen : Destination("profile")
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/screens/DecorationComponents.kt">
+package br.com.fiap.EcoWatts.screens
+
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
+
+@Composable
+fun TopEndCard(modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier
+            .width(160.dp)
+            .height(85.dp),
+        shape = RoundedCornerShape(bottomStart = 40.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)
+    ) { }
+}
+
+@Preview
+@Composable
+private fun TopEndCardPreview() {
+    EcoWatssTheme {
+        TopEndCard()
+    }
+}
+
+@Composable
+fun BottomStartCard(modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier
+            .width(160.dp)
+            .height(85.dp),
+        shape = RoundedCornerShape(topEnd = 40.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)
+    ) { }
+}
+
+@Preview
+@Composable
+private fun BottomStartCardPreview() {
+    EcoWatssTheme {
+        BottomStartCard()
     }
 }
 </file>
@@ -2767,7 +4409,6 @@ private fun LoginFormScreen() {
 <file path="app/src/main/java/br/com/fiap/EcoWatts/screens/SignupScreeen.kt">
 package br.com.fiap.EcoWatts.screens
 
-import br.com.fiap.EcoWatts.R
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -2839,9 +4480,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import br.com.fiap.EcoWatts.R
+import br.com.fiap.EcoWatts.model.User
 import br.com.fiap.EcoWatts.navigation.Destination
+import br.com.fiap.EcoWatts.repository.RoomUserRepository
 import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
-
+import br.com.fiap.EcoWatts.util.convertBitmapToByteArray
 
 @Composable
 fun SignupScreen(navController: NavController) {
@@ -2850,8 +4494,7 @@ fun SignupScreen(navController: NavController) {
 
     val placeholderImage = remember {
         BitmapFactory.decodeResource(
-            context.resources,
-            R.drawable.default_avatar
+            context.resources, R.drawable.default_avatar
         )
     }
     // Armazenar a imagem de profile
@@ -2864,12 +4507,8 @@ fun SignupScreen(navController: NavController) {
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         if (Build.VERSION.SDK_INT < 28) {
-            profileImage = MediaStore
-                .Images
-                .Media
-                .getBitmap(
-                    context.contentResolver,
-                    uri
+            profileImage = MediaStore.Images.Media.getBitmap(
+                    context.contentResolver, uri
                 )
         } else {
             if (uri != null) {
@@ -2882,8 +4521,7 @@ fun SignupScreen(navController: NavController) {
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         TopEndCard(modifier = Modifier.align(Alignment.TopEnd))
         BottomStartCard(modifier = Modifier.align(Alignment.BottomStart))
@@ -2899,10 +4537,9 @@ fun SignupScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(48.dp))
 
             UserImage(
-                profileImage = profileImage,
-                launchImage = launchImage
+                profileImage = profileImage, launchImage = launchImage
             )
-            SignupUserForm(navController,profileImage)
+            SignupUserForm(navController, profileImage)
         }
     }
 }
@@ -2919,8 +4556,7 @@ private fun SignupScreenPreview() {
 @Composable
 fun TitleComponent(modifier: Modifier = Modifier) {
     Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = stringResource(R.string.sign_up),
@@ -2945,14 +4581,12 @@ private fun TitleComponentPreview() {
 
 @Composable
 fun UserImage(
-    profileImage: Bitmap?,
-    launchImage: ManagedActivityResultLauncher<String, Uri?>
+    profileImage: Bitmap?, launchImage: ManagedActivityResultLauncher<String, Uri?>
 ) {
     Box(
         modifier = Modifier
             .size(120.dp)
-            .clickable { launchImage.launch("image/*") }
-    ) {
+            .clickable { launchImage.launch("image/*") }) {
         if (profileImage != null) {
             Image(
                 bitmap = profileImage.asImageBitmap(),
@@ -2979,8 +4613,7 @@ fun UserImage(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .background(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = CircleShape
+                    color = MaterialTheme.colorScheme.primary, shape = CircleShape
                 )
                 .padding(8.dp)
         )
@@ -3002,8 +4635,7 @@ private fun UserImagePreview() {
 
 @Composable
 fun SignupUserForm(
-    navController: NavController,
-    profileImage: Bitmap
+    navController: NavController, profileImage: Bitmap
 ) {
 
     var name by remember {
@@ -3025,7 +4657,9 @@ fun SignupUserForm(
     // verifica dados
     var isNameError by remember { mutableStateOf(false) }
     var isEmailError by remember { mutableStateOf(false) }
+    var isCityError by remember { mutableStateOf(false) }
     var isPasswordError by remember { mutableStateOf(false) }
+
 
     // Estado de erro
     var showDialogError by remember { mutableStateOf(false) }
@@ -3034,6 +4668,7 @@ fun SignupUserForm(
     fun validate(): Boolean {
         isNameError = name.length < 3
         isEmailError = email.length < 3 || !Patterns.EMAIL_ADDRESS.matcher(email).matches()
+        isCityError = city.isNotBlank() && city.length >= 3
         isPasswordError = password.length < 3
         return !isNameError && !isEmailError && !isPasswordError
     }
@@ -3042,7 +4677,7 @@ fun SignupUserForm(
         mutableStateOf(false)
     }
 
-    // val userRepository = RoomUserRepository(LocalContext.current)
+    val userRepository = RoomUserRepository(LocalContext.current)
 
     Column(
         modifier = Modifier
@@ -3056,11 +4691,9 @@ fun SignupUserForm(
             onValueChange = {
                 name = it
             },
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = OutlinedTextFieldDefaults
-                .colors(
+            colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 ),
@@ -3097,19 +4730,16 @@ fun SignupUserForm(
                         color = MaterialTheme.colorScheme.error
                     )
                 }
-            }
-        )
+            })
 
         OutlinedTextField(
             value = city,
             onValueChange = {
                 city = it
             },
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = OutlinedTextFieldDefaults
-                .colors(
+            colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 ),
@@ -3131,14 +4761,14 @@ fun SignupUserForm(
                 capitalization = KeyboardCapitalization.Words,
                 imeAction = ImeAction.Next
             ),
-            isError = isNameError,
+            isError = isCityError,
             trailingIcon = {
-                if (isNameError) {
+                if (isCityError) {
                     Icon(imageVector = Icons.Default.Error, contentDescription = "")
                 }
             },
             supportingText = {
-                if (isNameError) {
+                if (isCityError) {
                     Text(
                         text = stringResource(R.string.invalid_city),
                         modifier = Modifier.fillMaxWidth(),
@@ -3146,19 +4776,16 @@ fun SignupUserForm(
                         color = MaterialTheme.colorScheme.error
                     )
                 }
-            }
-        )
+            })
 
         OutlinedTextField(
             value = email,
             onValueChange = {
                 email = it
             },
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = OutlinedTextFieldDefaults
-                .colors(
+            colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 ),
@@ -3176,8 +4803,7 @@ fun SignupUserForm(
                 )
             },
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email,
-                imeAction = ImeAction.Next
+                keyboardType = KeyboardType.Email, imeAction = ImeAction.Next
             ),
             isError = isEmailError,
             trailingIcon = {
@@ -3194,19 +4820,16 @@ fun SignupUserForm(
                         color = MaterialTheme.colorScheme.error
                     )
                 }
-            }
-        )
+            })
 
         OutlinedTextField(
             value = password,
             onValueChange = {
                 password = it
             },
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = OutlinedTextFieldDefaults
-                .colors(
+            colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 ),
@@ -3224,8 +4847,7 @@ fun SignupUserForm(
                 )
             },
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done
+                keyboardType = KeyboardType.Password, imeAction = ImeAction.Done
             ),
             isError = isPasswordError,
             trailingIcon = {
@@ -3235,8 +4857,7 @@ fun SignupUserForm(
                     Icons.Default.VisibilityOff
                 }
                 IconButton(
-                    onClick = {showPassword.value = !showPassword.value}
-                ) {
+                    onClick = { showPassword.value = !showPassword.value }) {
                     Icon(
                         imageVector = image,
                         contentDescription = "",
@@ -3247,7 +4868,7 @@ fun SignupUserForm(
             supportingText = {
                 if (isPasswordError) {
                     Text(
-                        text = "invalid Password",
+                        text = stringResource(R.string.invalid_password),
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.End,
                         color = MaterialTheme.colorScheme.error
@@ -3261,19 +4882,23 @@ fun SignupUserForm(
         Spacer(modifier = Modifier.height(32.dp))
         Button(
             onClick = {
-//                if(validate()){
-//                    userRepository.saveUser(
-//                        User(name = name, email = email, password = password, userImage = convertBitmapToByteArray(profileImage))
-//                    )
-//                    showDialogSucess = true
-//                }else{
-//                    showDialogError = true
-//                }
-            },
-            modifier = Modifier
+                if (validate()) {
+                    userRepository.saveUser(
+                        User(
+                            name = name,
+                            email = email,
+                            password = password,
+                            city = city,
+                            userImage = convertBitmapToByteArray(profileImage)
+                        )
+                    )
+                    showDialogSucess = true
+                } else {
+                    showDialogError = true
+                }
+            }, modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp),
-            shape = RoundedCornerShape(8.dp)
+                .height(48.dp), shape = RoundedCornerShape(8.dp)
         ) {
             Text(
                 text = stringResource(R.string.create_account),
@@ -3293,8 +4918,7 @@ fun SignupUserForm(
             TextButton(
                 onClick = {
                     navController.navigate(Destination.LoginScreen.route)
-                }
-            ) {
+                }) {
                 Text(
                     text = stringResource(R.string.sign_in),
                     style = MaterialTheme.typography.bodyMedium,
@@ -3306,45 +4930,34 @@ fun SignupUserForm(
 
     // sucesso
     if (showDialogSucess) {
-        AlertDialog(
-            onDismissRequest = { showDialogError = false },
-            title = {
-                Text(text = "Success")
-            },
-            text = {
-                Text(text = "Conta criada com sucesso")
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-//                        showDialogSucess = false
-//                        navController.navigate(Destination.LoginScreen.route)
-                    }
-                ) {
-                    Text(text = "Ok")
-                }
+        AlertDialog(onDismissRequest = { showDialogError = false }, title = {
+            Text(text = "Success")
+        }, text = {
+            Text(text = "Conta criada com sucesso")
+        }, confirmButton = {
+            TextButton(
+                onClick = {
+                       showDialogSucess = false
+                        navController.navigate(Destination.LoginScreen.route)
+                }) {
+                Text(text = "Ok")
             }
-        )
+        })
     }
     //erro
     if (showDialogError) {
-        AlertDialog(
-            onDismissRequest = { showDialogError = false },
-            title = {
-                Text(text = "Error")
-            },
-            text = {
-                Text(text = "Please fill in all fields correctly")
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDialogError = false
-                    }
-                ) {
-                    Text("Ok")
-                }
+        AlertDialog(onDismissRequest = { showDialogError = false }, title = {
+            Text(text = "Error")
+        }, text = {
+            Text(text = "Please fill in all fields correctly")
+        }, confirmButton = {
+            TextButton(
+                onClick = {
+                    showDialogError = false
+                }) {
+                Text("Ok")
             }
+        }
 
         )
     }
@@ -3356,9 +4969,424 @@ fun SignupUserForm(
 private fun SignupUserFormPreview() {
     EcoWatssTheme {
         SignupUserForm(
-           rememberNavController(),
-            profileImage = TODO()
+            rememberNavController(), profileImage = TODO()
         )
+    }
+}
+</file>
+
+<file path="app/src/main/res/values/strings.xml">
+<resources>
+    <string name="app_name">EcoWatts</string>
+    <string name="smart_management">SMART CONTROL</string>
+    <string name="desc_smart_management">Monitor consumption, save on your bill, and reduce your environmental impact</string>
+    <string name="btn_login">Login</string>
+    <string name="btn_create_account">Sign Up</string>
+    <string name="login_subtitle">Smart energy for a better future</string>
+    <string name="login_title">Login</string>
+    <string name="your_email">Your Email</string>
+    <string name="your_password">Your Password</string>
+    <string name="sign_in">Sign In</string>
+    <string name="don_t_have_an_account">Don\'t have an account?</string>
+    <string name="error_authentication">Invalid email or password. Please try again</string>
+    <string name="sign_up">Sign up</string>
+
+    <string name="create_account">Create a new account</string>
+    <string name="user_image">User image</string>
+    <string name="camera_icon">Camera icon</string>
+    <string name="your_name">Your name</string>
+    <string name="person_icon">Person Icon</string>
+    <string name="email_icon">Email Icon</string>
+    <string name="remove_eye">Remove Eye</string>
+    <string name="invalid_name">invalid Name</string>
+    <string name="invalid_city">Invalid City</string>
+    <string name="invalid_email">invalid Email</string>
+    <string name="password_icon">Password icon</string>
+    <string name="hide_password">Hide password</string>
+    <string name="show_password">Show password</string>
+    <string name="already_have_an_account">Already have an account?</string>
+    <string name="your_city">Your City</string>
+    <string name="home">Home</string>
+    <string name="appliances">Appliances</string>
+    <string name="tips">Tips</string>
+    <string name="hello">Hello, %1$s!</string>
+    <string name="my_appliances">My Appliances</string>
+    <string name="track_your_energy_consumption">Track your energy consumption</string>
+    <string name="invalid_password">invalid Password</string>
+    <string name="tips_for_today">Tips for today</string>
+
+    // dicas
+    <string name="weather_loading">Loading weather...</string>
+    <string name="weather_unavailable">Could not load the weather right now.</string>
+
+    <!-- Temperature-based tips -->
+    <string name="tip_extreme_cold_title">Extreme cold!</string>
+    <string name="tip_extreme_cold_message">The electric shower can reach 30%% of your bill in winter. Cut down shower time.</string>
+
+    <string name="tip_heaters_title">Heaters</string>
+    <string name="tip_heaters_message">Avoid leaving electric heaters on all night — use extra blankets instead.</string>
+
+    <string name="tip_cold_shower_title">Watch your shower</string>
+    <string name="tip_cold_shower_message">Cold days increase electric shower usage. Keep showers shorter.</string>
+
+    <string name="tip_mild_weather_title">Mild weather</string>
+    <string name="tip_mild_weather_message">Great chance for natural ventilation instead of air conditioning.</string>
+
+    <string name="tip_daylight_title">Make the most of daylight</string>
+    <string name="tip_daylight_message">On bright days, avoid turning on lights before you need to.</string>
+
+    <string name="tip_moderate_heat_title">Moderate heat</string>
+    <string name="tip_moderate_heat_message">Set the AC to 23°C — every degree lower increases consumption significantly.</string>
+
+    <string name="tip_fan_before_ac_title">Fan before AC</string>
+    <string name="tip_fan_before_ac_message">On days like this, a fan already does the job and uses far less energy.</string>
+
+    <string name="tip_extreme_heat_title">Extreme heat!</string>
+    <string name="tip_extreme_heat_message">Air conditioning tends to weigh heavily on your bill. Keep doors and windows closed to retain cool air.</string>
+
+    <string name="tip_fridge_title">Refrigerator</string>
+    <string name="tip_fridge_message">Avoid opening the fridge often — it works harder to stay cool on hot days.</string>
+
+    <!-- Weather code-based tips -->
+    <string name="tip_rainy_day_title">Rainy day</string>
+    <string name="tip_rainy_day_message">Avoid drying clothes indoors with a fan on — use the clothesline once the rain stops.</string>
+
+    <string name="tip_storm_title">Storm ahead</string>
+    <string name="tip_storm_message">Unplug sensitive devices to avoid damage from power surges.</string>
+
+    <string name="tip_fog_title">Fog</string>
+    <string name="tip_fog_message">Foggy days tend to be colder — pay extra attention to shower time.</string>
+
+    <string name="tip_sunny_day_title">Sunny day</string>
+    <string name="tip_sunny_day_message">Take the chance to dry clothes naturally and save on the dryer, if you have one.</string>
+
+</resources>
+</file>
+
+<file path="app/src/main/res/values-pt-rBR/strings.xml">
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">EcoWatts</string>
+    <string name="smart_management">Gestão Inteligente</string>
+    <string name="desc_smart_management">Monitore o consumo, economize na conta e reduza seu impacto ambiental</string>
+    <string name="btn_login">Entrar</string>
+    <string name="btn_create_account">Criar Conta</string>
+    <string name="login_subtitle">Energia inteligente para um futuro melhor</string>
+    <string name="login_title">Login</string>
+    <string name="your_email">Seu E-mail</string>
+    <string name="your_password">Sua Senha</string>
+    <string name="sign_in">Entrar</string>
+    <string name="don_t_have_an_account">Não tem uma conta?</string>
+    <string name="error_authentication">E-mail ou senha inválidos. Tente novamente</string>
+
+    <string name="sign_up">Cadastre-se</string>
+    <string name="create_account">Criar uma nova conta</string>
+    <string name="user_image">Imagem do usuário</string>
+    <string name="camera_icon">Ícone da câmera</string>
+    <string name="your_name">Seu nome</string>
+    <string name="person_icon">Ícone de pessoa</string>
+    <string name="email_icon">Ícone de e-mail</string>
+    <string name="remove_eye">Ocultar olho</string>
+    <string name="invalid_name">Nome inválido</string>
+    <string name="invalid_city">Cidade inválida</string>
+    <string name="invalid_email">E-mail inválido</string>
+    <string name="password_icon">Ícone de senha</string>
+    <string name="hide_password">Ocultar senha</string>
+    <string name="show_password">Mostrar senha</string>
+    <string name="already_have_an_account">Já tem uma conta?</string>
+    <string name="your_city">Sua Cidade</string>
+    <string name="home">Início</string>
+    <string name="appliances">Aparelhos</string>
+    <string name="tips">Dicas</string>
+    <string name="hello">Olá, %1$s!</string>
+    <string name="my_appliances">Meus Aparelhos</string>
+    <string name="track_your_energy_consumption">Acompanhe seu consumo de energia</string>
+    <string name="invalid_password">Senha inválida</string>
+    <string name="tips_for_today">Dicas para hoje</string>
+
+    <!-- Weather loading/error states -->
+    <string name="weather_loading">Carregando clima...</string>
+    <string name="weather_unavailable">Não foi possível carregar o clima agora.</string>
+
+    <!-- Temperature-based tips -->
+    <string name="tip_extreme_cold_title">Frio intenso!</string>
+    <string name="tip_extreme_cold_message">O chuveiro elétrico pode chegar a 30%% da conta no inverno. Reduza o tempo de banho.</string>
+
+    <string name="tip_heaters_title">Aquecedores</string>
+    <string name="tip_heaters_message">Evite aquecedores elétricos ligados a noite toda — prefira cobertores extras.</string>
+
+    <string name="tip_cold_shower_title">Atenção ao chuveiro</string>
+    <string name="tip_cold_shower_message">Dias frios aumentam o uso do chuveiro elétrico. Prefira banhos mais curtos.</string>
+
+    <string name="tip_mild_weather_title">Clima ameno</string>
+    <string name="tip_mild_weather_message">Ótima oportunidade para ventilação natural em vez de ar-condicionado.</string>
+
+    <string name="tip_daylight_title">Aproveite a luz do dia</string>
+    <string name="tip_daylight_message">Com dias claros, evite acender lâmpadas antes do necessário.</string>
+
+    <string name="tip_moderate_heat_title">Calor moderado</string>
+    <string name="tip_moderate_heat_message">Ajuste o ar-condicionado para 23°C — cada grau a menos aumenta bastante o consumo.</string>
+
+    <string name="tip_fan_before_ac_title">Ventilador antes do AC</string>
+    <string name="tip_fan_before_ac_message">Em dias assim, um ventilador já resolve e consome bem menos energia.</string>
+
+    <string name="tip_extreme_heat_title">Calor extremo!</string>
+    <string name="tip_extreme_heat_message">O ar-condicionado tende a pesar bastante na conta. Mantenha portas e janelas fechadas para reter o ar frio.</string>
+
+    <string name="tip_fridge_title">Geladeira</string>
+    <string name="tip_fridge_message">Evite abrir a geladeira com frequência — ela trabalha mais para resfriar em dias quentes.</string>
+
+    <!-- Weather code-based tips -->
+    <string name="tip_rainy_day_title">Dia chuvoso</string>
+    <string name="tip_rainy_day_message">Evite estender roupas dentro de casa com o ventilador ligado — prefira o varal quando parar de chover.</string>
+
+    <string name="tip_storm_title">Tempestade prevista</string>
+    <string name="tip_storm_message">Desligue aparelhos sensíveis da tomada para evitar danos por oscilação de energia.</string>
+
+    <string name="tip_fog_title">Neblina</string>
+    <string name="tip_fog_message">Dias de neblina costumam ser mais frios — atenção redobrada ao tempo de banho.</string>
+
+    <string name="tip_sunny_day_title">Dia de sol</string>
+    <string name="tip_sunny_day_message">Aproveite para secar roupas naturalmente e economizar na secadora, se tiver uma.</string>
+</resources>
+</file>
+
+<file path="app/build.gradle.kts">
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+}
+
+android {
+    namespace = "br.com.fiap.EcoWatts"
+    compileSdk {
+        version = release(37)
+    }
+
+    defaultConfig {
+        applicationId = "br.com.fiap.ecowatts"
+        minSdk = 28
+        targetSdk = 37
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            optimization {
+                enable = false
+            }
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    buildFeatures {
+        compose = true
+    }
+}
+// TRECHO DE CÓDIGO OMITIDO
+dependencies {
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+
+    // Dependências do Navigation Compose
+    // e Kotlinx Serialization Json
+    implementation(libs.androidx.navigation.compose)
+    //implementation(libs.kotlinx.serialization.json)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // Biblioteca de ícones adicionais
+    implementation("androidx.compose.material:material-icons-extended-android:1.7.8")
+
+    //animação
+    implementation("com.airbnb.android:lottie-compose:6.7.1")
+
+
+    // Room dependencies
+    implementation(libs.androidx.room.runtime)
+    annotationProcessor(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
+
+    // Retrofit e conversor JSON
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+    // Interceptor para visualizar os logs da API
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // Coil para carregar imagens assincronamente no Compose
+    implementation("io.coil-kt:coil-compose:2.7.0")
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/navigation/NavigationRoutes.kt">
+package br.com.fiap.EcoWatts.navigation
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import br.com.fiap.EcoWatts.repository.SessionRepository
+import br.com.fiap.EcoWatts.screens.AddApplianceScreen
+import br.com.fiap.EcoWatts.screens.HomeScreen
+import br.com.fiap.EcoWatts.screens.InitialScreen
+import br.com.fiap.EcoWatts.screens.LoginScreen
+import br.com.fiap.EcoWatts.screens.AppliancesScreen
+import br.com.fiap.EcoWatts.screens.ProfileScreen
+import br.com.fiap.EcoWatts.screens.SignupScreen
+
+@Composable
+fun NavigationRoutes() {
+    val navController = rememberNavController();
+
+    val context = LocalContext.current
+    val sessionRepository = SessionRepository(context)
+
+    // Verifica se está alguém logado
+    val isUserLoggedIn = sessionRepository.getUserId() != 0
+
+    val startScreen = if (isUserLoggedIn) {
+        Destination.HomeScreen.route
+    } else {
+        Destination.InitialScreen.route
+    }
+
+    NavHost(
+        navController = navController,
+        startDestination = startScreen
+    ) {
+        composable(Destination.InitialScreen.route){ InitialScreen(navController) }
+        composable(Destination.HomeScreen.route){ HomeScreen(navController) }
+        composable(Destination.SignupScreen.route) { SignupScreen(navController) }
+        composable(Destination.LoginScreen.route) { LoginScreen(navController) }
+        composable(Destination.AddApplianceScreen.route) { AddApplianceScreen(navController) }
+        composable(Destination.AppliancesScreen.route) { AppliancesScreen(navController) }
+        composable(Destination.ProfileScreen.route) { ProfileScreen(navController) }
+    }
+}
+</file>
+
+<file path="app/src/main/java/br/com/fiap/EcoWatts/screens/HomeScreen.kt">
+package br.com.fiap.EcoWatts.screens
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import br.com.fiap.EcoWatts.R
+import br.com.fiap.EcoWatts.components.ButtomAppBar
+import br.com.fiap.EcoWatts.components.EcoWattsTopAppBar
+import br.com.fiap.EcoWatts.components.TipCard
+import br.com.fiap.EcoWatts.navigation.Destination
+import br.com.fiap.EcoWatts.repository.RoomUserRepository
+import br.com.fiap.EcoWatts.repository.SessionRepository
+import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
+
+@Composable
+fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
+
+    val context = LocalContext.current
+    val sessionRepository = remember { SessionRepository(context) }
+    val userRepository = remember { RoomUserRepository(context) }
+
+    var userName by remember { mutableStateOf("Carregando...") }
+    var userEmail by remember { mutableStateOf("") }
+    var userImage by remember { mutableStateOf<ByteArray?>(null) }
+
+    LaunchedEffect(Unit) {
+        val loggedInId = sessionRepository.getUserId()
+
+        if (loggedInId != 0) {
+            val user = userRepository.getUser(loggedInId)
+
+            if (user != null) {
+                userName = user.name
+                userEmail = user.email
+                userImage = user.userImage
+            }
+        }
+    }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        Scaffold(
+            topBar = {
+                EcoWattsTopAppBar(
+                    title = stringResource(R.string.hello, userName),
+                    subtitle = userEmail,
+                    navController = navController
+                )
+            },
+            bottomBar = { ButtomAppBar(navController, "tela_home") },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = { navController.navigate(Destination.AddApplianceScreen.route) },
+                    shape = CircleShape,
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add button"
+                    )
+                }
+            },
+        ) { paddingValues ->
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                TipCard()
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun HomeScreenPreview() {
+    EcoWatssTheme() {
+        HomeScreen(rememberNavController())
     }
 }
 </file>
