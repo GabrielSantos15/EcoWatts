@@ -35,7 +35,51 @@
     <string name="hello">Olá, %1$s!</string>
     <string name="my_appliances">Meus Aparelhos</string>
     <string name="track_your_energy_consumption">Acompanhe seu consumo de energia</string>
-    <string name="invalid_password">invalid Password</string>
+    <string name="invalid_password">Senha inválida</string>
+    <string name="tips_for_today">Dicas para hoje</string>
 
+    <!-- Weather loading/error states -->
+    <string name="weather_loading">Carregando clima...</string>
+    <string name="weather_unavailable">Não foi possível carregar o clima agora.</string>
 
+    <!-- Temperature-based tips -->
+    <string name="tip_extreme_cold_title">Frio intenso!</string>
+    <string name="tip_extreme_cold_message">O chuveiro elétrico pode chegar a 30%% da conta no inverno. Reduza o tempo de banho.</string>
+
+    <string name="tip_heaters_title">Aquecedores</string>
+    <string name="tip_heaters_message">Evite aquecedores elétricos ligados a noite toda — prefira cobertores extras.</string>
+
+    <string name="tip_cold_shower_title">Atenção ao chuveiro</string>
+    <string name="tip_cold_shower_message">Dias frios aumentam o uso do chuveiro elétrico. Prefira banhos mais curtos.</string>
+
+    <string name="tip_mild_weather_title">Clima ameno</string>
+    <string name="tip_mild_weather_message">Ótima oportunidade para ventilação natural em vez de ar-condicionado.</string>
+
+    <string name="tip_daylight_title">Aproveite a luz do dia</string>
+    <string name="tip_daylight_message">Com dias claros, evite acender lâmpadas antes do necessário.</string>
+
+    <string name="tip_moderate_heat_title">Calor moderado</string>
+    <string name="tip_moderate_heat_message">Ajuste o ar-condicionado para 23°C — cada grau a menos aumenta bastante o consumo.</string>
+
+    <string name="tip_fan_before_ac_title">Ventilador antes do AC</string>
+    <string name="tip_fan_before_ac_message">Em dias assim, um ventilador já resolve e consome bem menos energia.</string>
+
+    <string name="tip_extreme_heat_title">Calor extremo!</string>
+    <string name="tip_extreme_heat_message">O ar-condicionado tende a pesar bastante na conta. Mantenha portas e janelas fechadas para reter o ar frio.</string>
+
+    <string name="tip_fridge_title">Geladeira</string>
+    <string name="tip_fridge_message">Evite abrir a geladeira com frequência — ela trabalha mais para resfriar em dias quentes.</string>
+
+    <!-- Weather code-based tips -->
+    <string name="tip_rainy_day_title">Dia chuvoso</string>
+    <string name="tip_rainy_day_message">Evite estender roupas dentro de casa com o ventilador ligado — prefira o varal quando parar de chover.</string>
+
+    <string name="tip_storm_title">Tempestade prevista</string>
+    <string name="tip_storm_message">Desligue aparelhos sensíveis da tomada para evitar danos por oscilação de energia.</string>
+
+    <string name="tip_fog_title">Neblina</string>
+    <string name="tip_fog_message">Dias de neblina costumam ser mais frios — atenção redobrada ao tempo de banho.</string>
+
+    <string name="tip_sunny_day_title">Dia de sol</string>
+    <string name="tip_sunny_day_message">Aproveite para secar roupas naturalmente e economizar na secadora, se tiver uma.</string>
 </resources>

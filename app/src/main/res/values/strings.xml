@@ -35,5 +35,51 @@
     <string name="my_appliances">My Appliances</string>
     <string name="track_your_energy_consumption">Track your energy consumption</string>
     <string name="invalid_password">invalid Password</string>
+    <string name="tips_for_today">Tips for today</string>
+
+    // dicas
+    <string name="weather_loading">Loading weather...</string>
+    <string name="weather_unavailable">Could not load the weather right now.</string>
+
+    <!-- Temperature-based tips -->
+    <string name="tip_extreme_cold_title">Extreme cold!</string>
+    <string name="tip_extreme_cold_message">The electric shower can reach 30%% of your bill in winter. Cut down shower time.</string>
+
+    <string name="tip_heaters_title">Heaters</string>
+    <string name="tip_heaters_message">Avoid leaving electric heaters on all night — use extra blankets instead.</string>
+
+    <string name="tip_cold_shower_title">Watch your shower</string>
+    <string name="tip_cold_shower_message">Cold days increase electric shower usage. Keep showers shorter.</string>
+
+    <string name="tip_mild_weather_title">Mild weather</string>
+    <string name="tip_mild_weather_message">Great chance for natural ventilation instead of air conditioning.</string>
+
+    <string name="tip_daylight_title">Make the most of daylight</string>
+    <string name="tip_daylight_message">On bright days, avoid turning on lights before you need to.</string>
+
+    <string name="tip_moderate_heat_title">Moderate heat</string>
+    <string name="tip_moderate_heat_message">Set the AC to 23°C — every degree lower increases consumption significantly.</string>
+
+    <string name="tip_fan_before_ac_title">Fan before AC</string>
+    <string name="tip_fan_before_ac_message">On days like this, a fan already does the job and uses far less energy.</string>
+
+    <string name="tip_extreme_heat_title">Extreme heat!</string>
+    <string name="tip_extreme_heat_message">Air conditioning tends to weigh heavily on your bill. Keep doors and windows closed to retain cool air.</string>
+
+    <string name="tip_fridge_title">Refrigerator</string>
+    <string name="tip_fridge_message">Avoid opening the fridge often — it works harder to stay cool on hot days.</string>
+
+    <!-- Weather code-based tips -->
+    <string name="tip_rainy_day_title">Rainy day</string>
+    <string name="tip_rainy_day_message">Avoid drying clothes indoors with a fan on — use the clothesline once the rain stops.</string>
+
+    <string name="tip_storm_title">Storm ahead</string>
+    <string name="tip_storm_message">Unplug sensitive devices to avoid damage from power surges.</string>
+
+    <string name="tip_fog_title">Fog</string>
+    <string name="tip_fog_message">Foggy days tend to be colder — pay extra attention to shower time.</string>
+
+    <string name="tip_sunny_day_title">Sunny day</string>
+    <string name="tip_sunny_day_message">Take the chance to dry clothes naturally and save on the dryer, if you have one.</string>
 
 </resources>
