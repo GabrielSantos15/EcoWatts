@@ -88,7 +88,7 @@ fun EcoWattsTopAppBar(
                 Column {
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.labelLarge,
+                        style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
                     )

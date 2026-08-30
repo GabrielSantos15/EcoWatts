@@ -80,13 +80,6 @@ fun AppliancesScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Text(
-                text = "Meus Aparelhos",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(24.dp)
-            )
-
             if (aparelhos.isEmpty()) {
                 Column(
                     modifier = Modifier

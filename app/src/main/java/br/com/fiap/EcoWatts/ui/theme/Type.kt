@@ -66,11 +66,11 @@ val Typography = Typography(
         lineHeight = 100.sp,
         letterSpacing = 0.5.sp
     ),
-    labelLarge = TextStyle(
+    headlineMedium = TextStyle(
         fontFamily = poppinsFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 28.sp,
-        lineHeight = 100.sp,
+        lineHeight = 34.sp,
         letterSpacing = 0.5.sp
     ),
     displayMedium = TextStyle(
