@@ -16,12 +16,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import br.com.fiap.EcoWatts.R
 import br.com.fiap.EcoWatts.components.ButtomAppBar
+import br.com.fiap.EcoWatts.components.EcoWattsTopAppBar
 import br.com.fiap.EcoWatts.model.Appliance
 import br.com.fiap.EcoWatts.navigation.Destination
 import br.com.fiap.EcoWatts.repository.RoomApplianceRepository
@@ -52,7 +55,14 @@ fun AppliancesScreen(navController: NavController) {
     }
 
     Scaffold(
-        bottomBar = { ButtomAppBar(navController, "tela_aparelhos") },
+        topBar = {
+            EcoWattsTopAppBar(
+                title = stringResource(R.string.my_appliances),
+                subtitle = stringResource(R.string.track_your_energy_consumption),
+                navController = navController
+            )
+        },
+        bottomBar = { ButtomAppBar(navController, "appliances") },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
@@ -190,9 +200,18 @@ fun AparelhoCard(aparelho: Appliance, onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = formatPotencia(aparelho.powerWatts), style = MaterialTheme.typography.bodySmall)
-                Text(text = formatHorasDia(aparelho.hoursOfUsePerDay), style = MaterialTheme.typography.bodySmall)
-                Text(text = formatConsumoKwh(aparelho.monthlyConsumptionKwh()), style = MaterialTheme.typography.bodySmall)
+                Text(
+                    text = formatPotencia(aparelho.powerWatts),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = formatHorasDia(aparelho.hoursOfUsePerDay),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = formatConsumoKwh(aparelho.monthlyConsumptionKwh()),
+                    style = MaterialTheme.typography.bodySmall
+                )
                 Text(
                     text = "${formatCurrencyBRL(aparelho.monthlyCost)}/mês",
                     style = MaterialTheme.typography.bodySmall,
@@ -218,13 +237,20 @@ fun AparelhoDetailDialog(
             Column {
                 Text(text = formatPotencia(aparelho.powerWatts))
                 Text(text = formatHorasDia(aparelho.hoursOfUsePerDay))
-                Text(text = formatConsumoKwh(aparelho.monthlyConsumptionKwh()), style = MaterialTheme.typography.bodySmall)
+                Text(
+                    text = formatConsumoKwh(aparelho.monthlyConsumptionKwh()),
+                    style = MaterialTheme.typography.bodySmall
+                )
                 Text(text = "${formatCurrencyBRL(aparelho.monthlyCost)}/mês")
             }
         },
         confirmButton = {
             TextButton(onClick = onEdit) {
-                Icon(imageVector = Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(text = "Editar")
             }

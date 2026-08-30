@@ -11,6 +11,7 @@ import br.com.fiap.EcoWatts.screens.HomeScreen
 import br.com.fiap.EcoWatts.screens.InitialScreen
 import br.com.fiap.EcoWatts.screens.LoginScreen
 import br.com.fiap.EcoWatts.screens.AppliancesScreen
+import br.com.fiap.EcoWatts.screens.ProfileScreen
 import br.com.fiap.EcoWatts.screens.SignupScreen
 
 @Composable
@@ -20,7 +21,7 @@ fun NavigationRoutes() {
     val context = LocalContext.current
     val sessionRepository = SessionRepository(context)
 
-    // Verificamos se está alguém logado
+    // Verifica se está alguém logado
     val isUserLoggedIn = sessionRepository.getUserId() != 0
 
     val startScreen = if (isUserLoggedIn) {
@@ -39,5 +40,6 @@ fun NavigationRoutes() {
         composable(Destination.LoginScreen.route) { LoginScreen(navController) }
         composable(Destination.AddApplianceScreen.route) { AddApplianceScreen(navController) }
         composable(Destination.AppliancesScreen.route) { AppliancesScreen(navController) }
+        composable(Destination.ProfileScreen.route) { ProfileScreen(navController) }
     }
 }

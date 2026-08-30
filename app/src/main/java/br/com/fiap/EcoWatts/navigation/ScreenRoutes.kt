@@ -8,4 +8,6 @@ sealed class Destination(val route: String){
     object AddApplianceScreen : Destination("add_appliance")
 
     object AppliancesScreen : Destination("appliances")
+
+    object ProfileScreen : Destination("profile")
 }

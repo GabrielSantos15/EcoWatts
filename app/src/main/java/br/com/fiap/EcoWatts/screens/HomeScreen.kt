@@ -11,15 +11,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import br.com.fiap.EcoWatts.R
 import br.com.fiap.EcoWatts.components.ButtomAppBar
+import br.com.fiap.EcoWatts.components.EcoWattsTopAppBar
 import br.com.fiap.EcoWatts.navigation.Destination
 import br.com.fiap.EcoWatts.repository.RoomUserRepository
 import br.com.fiap.EcoWatts.repository.SessionRepository
@@ -34,6 +38,7 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
 
     var userName by remember { mutableStateOf("Carregando...") }
     var userEmail by remember { mutableStateOf("") }
+    var userImage by remember { mutableStateOf<ByteArray?>(null) }
 
     LaunchedEffect(Unit) {
         val loggedInId = sessionRepository.getUserId()
@@ -41,9 +46,11 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
         if (loggedInId != 0) {
             val user = userRepository.getUser(loggedInId)
 
-            // Atualiza os textos da tela
-            userName = user.name
-            userEmail = user.email
+            if (user != null) {
+                userName = user.name
+                userEmail = user.email
+                userImage = user.userImage
+            }
         }
     }
 
@@ -53,16 +60,16 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
     ) {
         Scaffold(
             topBar = {
-                Text(
-                    text = "Bem-vindo(a), $userName!",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier  = Modifier.padding(10.dp)
+                EcoWattsTopAppBar(
+                    title = stringResource(R.string.hello, userName),
+                    subtitle = userEmail,
+                    navController = navController
                 )
             },
             bottomBar = { ButtomAppBar(navController, "tela_home") },
             floatingActionButton = {
                 FloatingActionButton(
-                    onClick = {navController.navigate(Destination.AddApplianceScreen.route)},
+                    onClick = { navController.navigate(Destination.AddApplianceScreen.route) },
                     shape = CircleShape,
                     containerColor = MaterialTheme.colorScheme.primary
                 ) {

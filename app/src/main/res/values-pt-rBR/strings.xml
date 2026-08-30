@@ -30,8 +30,11 @@
     <string name="already_have_an_account">Já tem uma conta?</string>
     <string name="your_city">Sua Cidade</string>
     <string name="home">Início</string>
-    <string name="devices">Aparelhos</string>
+    <string name="appliances">Aparelhos</string>
     <string name="tips">Dicas</string>
+    <string name="hello">Olá, %1$s!</string>
+    <string name="my_appliances">Meus Aparelhos</string>
+    <string name="track_your_energy_consumption">Acompanhe seu consumo de energia</string>
 
 
 </resources>

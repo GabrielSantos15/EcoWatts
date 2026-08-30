@@ -37,7 +37,7 @@ fun ButtomAppBar(
 ) {
     val items = listOf(
         BottomNavigationItem(stringResource(R.string.home), icon = Icons.Default.Home, route = Destination.HomeScreen.route),
-        BottomNavigationItem(stringResource(R.string.devices), icon = Icons.Default.List, route = Destination.AppliancesScreen.route),
+        BottomNavigationItem(stringResource(R.string.appliances), icon = Icons.Default.List, route = Destination.AppliancesScreen.route),
         BottomNavigationItem(stringResource(R.string.tips), icon = Icons.Default.Lightbulb, route = Destination.HomeScreen.route),
     )
 
