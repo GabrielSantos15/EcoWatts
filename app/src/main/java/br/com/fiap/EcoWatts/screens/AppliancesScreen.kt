@@ -15,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,67 +55,71 @@ fun AppliancesScreen(navController: NavController) {
         aparelhos = applianceRepository.getAppliancesByUser(userId)
     }
 
-    Scaffold(
-        topBar = {
-            EcoWattsTopAppBar(
-                title = stringResource(R.string.my_appliances),
-                subtitle = stringResource(R.string.track_your_energy_consumption),
-                navController = navController
-            )
-        },
-        bottomBar = { ButtomAppBar(navController, "appliances") },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    navController.navigate(Destination.AddApplianceScreen.createRoute())
-                },
-                shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar aparelho")
-            }
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            if (aparelhos.isEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+    GradientTopBackground {
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                EcoWattsTopAppBar(
+                    title = stringResource(R.string.my_appliances),
+                    subtitle = stringResource(R.string.track_your_energy_consumption),
+                    navController = navController,
+                    isWhiteText = true
+                )
+            },
+            bottomBar = { ButtomAppBar(navController, "appliances") },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = {
+                        navController.navigate(Destination.AddApplianceScreen.createRoute())
+                    },
+                    shape = CircleShape,
+                    containerColor = MaterialTheme.colorScheme.primary
                 ) {
-                    Text(
-                        text = "Nenhum aparelho cadastrado.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = {
-                            navController.navigate(Destination.AddApplianceScreen.createRoute())
-                        }
-                    ) {
-                        Text(text = "Adicionar primeiro aparelho")
-                    }
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar aparelho")
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(aparelhos, key = { it.id }) { aparelho ->
-                        AparelhoCard(
-                            aparelho = aparelho,
-                            onClick = { aparelhoSelecionado = aparelho }
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                if (aparelhos.isEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Nenhum aparelho cadastrado.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onBackground
                         )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Button(
+                            onClick = {
+                                navController.navigate(Destination.AddApplianceScreen.createRoute())
+                            }
+                        ) {
+                            Text(text = "Adicionar primeiro aparelho")
+                        }
                     }
-                    item { Spacer(modifier = Modifier.height(72.dp)) }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(aparelhos, key = { it.id }) { aparelho ->
+                            AparelhoCard(
+                                aparelho = aparelho,
+                                onClick = { aparelhoSelecionado = aparelho }
+                            )
+                        }
+                        item { Spacer(modifier = Modifier.height(72.dp)) }
+                    }
                 }
             }
         }

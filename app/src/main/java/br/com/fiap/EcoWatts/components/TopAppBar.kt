@@ -49,7 +49,8 @@ fun EcoWattsTopAppBar(
     title: String,
     subtitle: String,
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isWhiteText: Boolean = false
 ) {
     val context = LocalContext.current
     val sessionRepository = remember { SessionRepository(context) }
@@ -75,6 +76,10 @@ fun EcoWattsTopAppBar(
         }
     }
 
+    val titleColor = if (isWhiteText) Color.White else MaterialTheme.colorScheme.primary
+    val subtitleColor = if (isWhiteText) Color.White.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
+    val borderColor = if (isWhiteText) Color.White else MaterialTheme.colorScheme.primary
+
     TopAppBar(
         modifier = modifier.fillMaxWidth(),
         title = {
@@ -89,13 +94,13 @@ fun EcoWattsTopAppBar(
                     Text(
                         text = title,
                         style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = titleColor,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = subtitleColor
                     )
                 }
 
@@ -104,7 +109,7 @@ fun EcoWattsTopAppBar(
                     colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                     border = BorderStroke(
                         width = 1.dp,
-                        color = MaterialTheme.colorScheme.primary
+                        color = borderColor
                     ),
                     modifier = Modifier
                         .size(60.dp)

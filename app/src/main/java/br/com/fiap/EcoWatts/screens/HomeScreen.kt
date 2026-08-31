@@ -12,6 +12,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,6 +30,7 @@ import br.com.fiap.EcoWatts.repository.RoomApplianceRepository
 import br.com.fiap.EcoWatts.repository.RoomUserRepository
 import br.com.fiap.EcoWatts.repository.SessionRepository
 import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
+
 @Composable
 fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
 
@@ -41,6 +43,8 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
     var userEmail by remember { mutableStateOf("") }
     var userImage by remember { mutableStateOf<ByteArray?>(null) }
     var aparelhos by remember { mutableStateOf(listOf<Appliance>()) }
+
+
 
     LaunchedEffect(Unit) {
         val loggedInId = sessionRepository.getUserId()
@@ -57,17 +61,16 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
             aparelhos = applianceRepository.getAppliancesByUser(loggedInId)
         }
     }
+    GradientTopBackground {
 
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
         Scaffold(
+            containerColor = Color.Transparent,
             topBar = {
                 EcoWattsTopAppBar(
                     title = stringResource(R.string.hello, userName),
                     subtitle = userEmail,
-                    navController = navController
+                    navController = navController,
+                    isWhiteText = true
                 )
             },
             bottomBar = { ButtomAppBar(navController, "tela_home") },
@@ -98,6 +101,7 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
                 TipCard()
             }
         }
+
     }
 }
 
