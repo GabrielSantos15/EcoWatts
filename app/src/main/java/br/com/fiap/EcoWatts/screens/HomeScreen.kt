@@ -4,14 +4,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,23 +20,27 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.fiap.EcoWatts.R
 import br.com.fiap.EcoWatts.components.ButtomAppBar
+import br.com.fiap.EcoWatts.components.DashboardSummary
 import br.com.fiap.EcoWatts.components.EcoWattsTopAppBar
 import br.com.fiap.EcoWatts.components.TipCard
+import br.com.fiap.EcoWatts.model.Appliance
 import br.com.fiap.EcoWatts.navigation.Destination
+import br.com.fiap.EcoWatts.repository.RoomApplianceRepository
 import br.com.fiap.EcoWatts.repository.RoomUserRepository
 import br.com.fiap.EcoWatts.repository.SessionRepository
 import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
-
 @Composable
 fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
 
     val context = LocalContext.current
     val sessionRepository = remember { SessionRepository(context) }
     val userRepository = remember { RoomUserRepository(context) }
+    val applianceRepository = remember { RoomApplianceRepository(context) }
 
     var userName by remember { mutableStateOf("Carregando...") }
     var userEmail by remember { mutableStateOf("") }
     var userImage by remember { mutableStateOf<ByteArray?>(null) }
+    var aparelhos by remember { mutableStateOf(listOf<Appliance>()) }
 
     LaunchedEffect(Unit) {
         val loggedInId = sessionRepository.getUserId()
@@ -52,6 +53,8 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
                 userEmail = user.email
                 userImage = user.userImage
             }
+
+            aparelhos = applianceRepository.getAppliancesByUser(loggedInId)
         }
     }
 
@@ -88,6 +91,10 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                DashboardSummary(aparelhos = aparelhos)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 TipCard()
             }
         }
