@@ -2,6 +2,7 @@ package br.com.fiap.EcoWatts.components
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.List
@@ -38,7 +39,7 @@ fun ButtomAppBar(
     val items = listOf(
         BottomNavigationItem(stringResource(R.string.home), icon = Icons.Default.Home, route = Destination.HomeScreen.route),
         BottomNavigationItem(stringResource(R.string.appliances), icon = Icons.Default.List, route = Destination.AppliancesScreen.route),
-        BottomNavigationItem(stringResource(R.string.tips), icon = Icons.Default.Lightbulb, route = Destination.HomeScreen.route),
+        BottomNavigationItem(stringResource(R.string.dashboard), icon = Icons.Default.Dashboard, route = Destination.DashboardScreen.route),
     )
 
     NavigationBar(

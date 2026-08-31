@@ -13,6 +13,7 @@ import br.com.fiap.EcoWatts.screens.HomeScreen
 import br.com.fiap.EcoWatts.screens.InitialScreen
 import br.com.fiap.EcoWatts.screens.LoginScreen
 import br.com.fiap.EcoWatts.screens.AppliancesScreen
+import br.com.fiap.EcoWatts.screens.DashboardScreen
 import br.com.fiap.EcoWatts.screens.ProfileScreen
 import br.com.fiap.EcoWatts.screens.SignupScreen
 
@@ -58,5 +59,6 @@ fun NavigationRoutes() {
 
         composable(Destination.AppliancesScreen.route) { AppliancesScreen(navController) }
         composable(Destination.ProfileScreen.route) { ProfileScreen(navController) }
+        composable(Destination.DashboardScreen.route) { DashboardScreen(navController) }
     }
 }

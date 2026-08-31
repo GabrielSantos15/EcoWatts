@@ -29,6 +29,7 @@ import br.com.fiap.EcoWatts.model.Appliance
 import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
 import br.com.fiap.EcoWatts.util.formatConsumoKwh
 import br.com.fiap.EcoWatts.util.formatCurrencyBRL
+import br.com.fiap.EcoWatts.util.getMonthlyCost
 import br.com.fiap.EcoWatts.util.monthlyConsumptionKwh
 
 /**
@@ -38,9 +39,10 @@ import br.com.fiap.EcoWatts.util.monthlyConsumptionKwh
 @Composable
 fun DashboardSummary(
     aparelhos: List<Appliance>,
+    precoKwh: Double,
     modifier: Modifier = Modifier
 ) {
-    val contaEstimada = aparelhos.sumOf { it.monthlyCost }
+    val contaEstimada = aparelhos.sumOf { it.getMonthlyCost(precoKwh) }
     val consumoTotalKwh = aparelhos.sumOf { it.monthlyConsumptionKwh() }
     val quantidade = aparelhos.size
     val maiorConsumidor = aparelhos.maxByOrNull { it.monthlyConsumptionKwh() }
@@ -65,7 +67,7 @@ fun DashboardSummary(
             )
         }
 
-        TopConsumerCard(aparelho = maiorConsumidor)
+        TopConsumerCard(aparelho = maiorConsumidor, precoKwh = precoKwh)
     }
 }
 
@@ -169,7 +171,7 @@ private fun ApplianceCountCard(quantidade: Int, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun TopConsumerCard(aparelho: Appliance?) {
+private fun TopConsumerCard(aparelho: Appliance?, precoKwh: Double) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -203,7 +205,7 @@ private fun TopConsumerCard(aparelho: Appliance?) {
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "${formatCurrencyBRL(aparelho.monthlyCost)}/mês",
+                        text = "${formatCurrencyBRL(aparelho.getMonthlyCost(precoKwh))}/mês",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -223,6 +225,6 @@ private fun TopConsumerCard(aparelho: Appliance?) {
 @Composable
 private fun DashboardSummaryPreview() {
     EcoWatssTheme {
-        DashboardSummary(aparelhos = emptyList())
+        DashboardSummary(aparelhos = emptyList(), precoKwh = 0.8)
     }
 }

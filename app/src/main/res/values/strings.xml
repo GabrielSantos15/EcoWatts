@@ -81,5 +81,6 @@
 
     <string name="tip_sunny_day_title">Sunny day</string>
     <string name="tip_sunny_day_message">Take the chance to dry clothes naturally and save on the dryer, if you have one.</string>
+    <string name="dashboard">Dashboard</string>
 
 </resources>

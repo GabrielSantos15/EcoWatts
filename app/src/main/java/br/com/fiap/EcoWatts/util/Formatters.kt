@@ -40,3 +40,7 @@ fun formatCurrencyBRL(valor: Double): String {
 fun Appliance.monthlyConsumptionKwh(): Double {
     return (powerWatts * hoursOfUsePerDay * 30) / 1000.0
 }
+
+fun Appliance.getMonthlyCost(precoKwh: Double): Double {
+    return this.monthlyConsumptionKwh() * precoKwh
+}

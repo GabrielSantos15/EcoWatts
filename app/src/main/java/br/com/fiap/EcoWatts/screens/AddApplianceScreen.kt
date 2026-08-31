@@ -260,11 +260,9 @@ fun AddApplianceScreen(navController: NavController, applianceId: Int? = null) {
                         if (validate()) {
                             val userId = if (emEdicao) userIdOriginal else sessionRepository.getUserId()
                             val user = userRepository.getUser(userId)
-                            val precoKwh = user?.precoKwh ?: 0.8
 
                             val w = potencia.toDouble()
                             val h = horasPorDia.toDouble()
-                            val custoMensal = ((w * h * 30) / 1000.0) * precoKwh
 
                             coroutineScope.launch {
                                 if (emEdicao) {
@@ -274,7 +272,6 @@ fun AddApplianceScreen(navController: NavController, applianceId: Int? = null) {
                                             name = nome,
                                             powerWatts = w,
                                             hoursOfUsePerDay = h,
-                                            monthlyCost = custoMensal,
                                             userId = userId
                                         )
                                     )
@@ -284,7 +281,6 @@ fun AddApplianceScreen(navController: NavController, applianceId: Int? = null) {
                                             name = nome,
                                             powerWatts = w,
                                             hoursOfUsePerDay = h,
-                                            monthlyCost = custoMensal,
                                             userId = userId
                                         )
                                     )

@@ -25,6 +25,7 @@ import br.com.fiap.EcoWatts.components.DashboardSummary
 import br.com.fiap.EcoWatts.components.EcoWattsTopAppBar
 import br.com.fiap.EcoWatts.components.TipCard
 import br.com.fiap.EcoWatts.model.Appliance
+import br.com.fiap.EcoWatts.model.User
 import br.com.fiap.EcoWatts.navigation.Destination
 import br.com.fiap.EcoWatts.repository.RoomApplianceRepository
 import br.com.fiap.EcoWatts.repository.RoomUserRepository
@@ -39,25 +40,14 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
     val userRepository = remember { RoomUserRepository(context) }
     val applianceRepository = remember { RoomApplianceRepository(context) }
 
-    var userName by remember { mutableStateOf("Carregando...") }
-    var userEmail by remember { mutableStateOf("") }
-    var userImage by remember { mutableStateOf<ByteArray?>(null) }
+    var user by remember { mutableStateOf(User()) }
     var aparelhos by remember { mutableStateOf(listOf<Appliance>()) }
-
-
 
     LaunchedEffect(Unit) {
         val loggedInId = sessionRepository.getUserId()
 
         if (loggedInId != 0) {
-            val user = userRepository.getUser(loggedInId)
-
-            if (user != null) {
-                userName = user.name
-                userEmail = user.email
-                userImage = user.userImage
-            }
-
+            user = userRepository.getUser(loggedInId)
             aparelhos = applianceRepository.getAppliancesByUser(loggedInId)
         }
     }
@@ -67,13 +57,13 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
             containerColor = Color.Transparent,
             topBar = {
                 EcoWattsTopAppBar(
-                    title = stringResource(R.string.hello, userName),
-                    subtitle = userEmail,
+                    title = stringResource(R.string.hello, user.name),
+                    subtitle = user.email,
                     navController = navController,
                     isWhiteText = true
                 )
             },
-            bottomBar = { ButtomAppBar(navController, "tela_home") },
+            bottomBar = { ButtomAppBar(navController, "home") },
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = { navController.navigate(Destination.AddApplianceScreen.createRoute()) },
@@ -94,7 +84,7 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                DashboardSummary(aparelhos = aparelhos)
+                DashboardSummary(aparelhos = aparelhos, precoKwh = user.precoKwh)
 
                 Spacer(modifier = Modifier.height(16.dp))
 

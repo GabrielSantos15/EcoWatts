@@ -23,6 +23,5 @@ data class Appliance(
     val name: String,
     val powerWatts: Double,
     val hoursOfUsePerDay: Double,
-    val monthlyCost: Double,
     val userId: Int
 )

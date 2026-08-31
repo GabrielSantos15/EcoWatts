@@ -64,7 +64,7 @@ fun GradientTopBackground(
     height: androidx.compose.ui.unit.Dp = 210.dp,
     content: @Composable () -> Unit
 ) {
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()

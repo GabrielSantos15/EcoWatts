@@ -24,6 +24,11 @@ interface ApplianceDao {
     @Query("SELECT * FROM appliances WHERE id = :id")
     suspend fun getApplianceById(id: Int): Appliance?
 
-    @Query("SELECT SUM(monthlyCost) FROM appliances WHERE userId = :userId")
+    @Query("""
+    SELECT SUM(((a.powerWatts * a.hoursOfUsePerDay * 30.0) / 1000.0) * u.precoKwh) 
+    FROM appliances a 
+    INNER JOIN tb_user u ON a.userId = u.id 
+    WHERE a.userId = :userId
+""")
     suspend fun getTotalMonthlyCostByUser(userId: Int): Double?
 }

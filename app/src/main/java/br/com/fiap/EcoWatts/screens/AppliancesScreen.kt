@@ -29,12 +29,14 @@ import br.com.fiap.EcoWatts.components.EcoWattsTopAppBar
 import br.com.fiap.EcoWatts.model.Appliance
 import br.com.fiap.EcoWatts.navigation.Destination
 import br.com.fiap.EcoWatts.repository.RoomApplianceRepository
+import br.com.fiap.EcoWatts.repository.RoomUserRepository
 import br.com.fiap.EcoWatts.repository.SessionRepository
 import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
 import br.com.fiap.EcoWatts.util.formatConsumoKwh
 import br.com.fiap.EcoWatts.util.formatCurrencyBRL
 import br.com.fiap.EcoWatts.util.formatHorasDia
 import br.com.fiap.EcoWatts.util.formatPotencia
+import br.com.fiap.EcoWatts.util.getMonthlyCost
 import br.com.fiap.EcoWatts.util.monthlyConsumptionKwh
 import kotlinx.coroutines.launch
 
@@ -43,16 +45,19 @@ fun AppliancesScreen(navController: NavController) {
     val context = LocalContext.current
     val sessionRepository = remember { SessionRepository(context) }
     val applianceRepository = remember { RoomApplianceRepository(context) }
+    val userRepository = remember { RoomUserRepository(context) }
     val coroutineScope = rememberCoroutineScope()
 
     var aparelhos by remember { mutableStateOf(listOf<Appliance>()) }
     var aparelhoSelecionado by remember { mutableStateOf<Appliance?>(null) }
     var aparelhoParaExcluir by remember { mutableStateOf<Appliance?>(null) }
     var refreshTrigger by remember { mutableStateOf(0) }
+    var precoKwh by remember { mutableStateOf(0.8) }
 
     LaunchedEffect(refreshTrigger) {
         val userId = sessionRepository.getUserId()
         aparelhos = applianceRepository.getAppliancesByUser(userId)
+        precoKwh = userRepository.getUser(userId).precoKwh
     }
 
     GradientTopBackground {
@@ -115,6 +120,7 @@ fun AppliancesScreen(navController: NavController) {
                         items(aparelhos, key = { it.id }) { aparelho ->
                             AparelhoCard(
                                 aparelho = aparelho,
+                                precoKwh = precoKwh,
                                 onClick = { aparelhoSelecionado = aparelho }
                             )
                         }
@@ -128,6 +134,7 @@ fun AppliancesScreen(navController: NavController) {
     aparelhoSelecionado?.let { aparelho ->
         AparelhoDetailDialog(
             aparelho = aparelho,
+            precoKwh = precoKwh,
             onDismiss = { aparelhoSelecionado = null },
             onEdit = {
                 aparelhoSelecionado = null
@@ -168,14 +175,14 @@ fun AppliancesScreen(navController: NavController) {
 }
 
 @Composable
-fun AparelhoCard(aparelho: Appliance, onClick: () -> Unit) {
+fun AparelhoCard(aparelho: Appliance, precoKwh : Double, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Row(
             modifier = Modifier
@@ -211,7 +218,7 @@ fun AparelhoCard(aparelho: Appliance, onClick: () -> Unit) {
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(
-                    text = "${formatCurrencyBRL(aparelho.monthlyCost)}/mês",
+                    text = "${formatCurrencyBRL(aparelho.getMonthlyCost(precoKwh))}/mês",
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
@@ -224,6 +231,7 @@ fun AparelhoCard(aparelho: Appliance, onClick: () -> Unit) {
 @Composable
 fun AparelhoDetailDialog(
     aparelho: Appliance,
+    precoKwh : Double,
     onDismiss: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
@@ -239,7 +247,7 @@ fun AparelhoDetailDialog(
                     text = formatConsumoKwh(aparelho.monthlyConsumptionKwh()),
                     style = MaterialTheme.typography.bodySmall
                 )
-                Text(text = "${formatCurrencyBRL(aparelho.monthlyCost)}/mês")
+                Text(text = "${formatCurrencyBRL(aparelho.getMonthlyCost(precoKwh))}/mês")
             }
         },
         confirmButton = {
