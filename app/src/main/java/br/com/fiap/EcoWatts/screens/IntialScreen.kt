@@ -3,6 +3,7 @@ package br.com.fiap.EcoWatts.screens
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -27,11 +28,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import br.com.fiap.EcoWatts.R
+import br.com.fiap.EcoWatts.components.BottomStartCard
+import br.com.fiap.EcoWatts.components.TopEndCard
 import br.com.fiap.EcoWatts.navigation.Destination
 import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
-import br.com.fiap.EcoWatts.ui.theme.SoftBackgroundPrimary
-import br.com.fiap.EcoWatts.ui.theme.SoftBackgroundSecondary
-import br.com.fiap.EcoWatts.R
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -39,17 +40,33 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 
 @Composable
-fun InitialScreen(navController: NavController){
+fun InitialScreen(navController: NavController) {
+
+    val isDarkTheme = isSystemInDarkTheme()
+
+    val backgroundGradient = if (isDarkTheme) {
+        Brush.verticalGradient(
+            colors = listOf(
+                Color(0xFF3646A6),
+                Color(0xFF2E207A)
+            )
+        )
+    } else {
+
+        Brush.verticalGradient(
+            colors = listOf(
+                Color(0xFF81B2FE),
+                Color(0xFF5378FD)
+            )
+        )
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(SoftBackgroundPrimary, SoftBackgroundSecondary)
-                )
-            )
+            .background(brush = backgroundGradient)
 //            .background(color  = MaterialTheme.colorScheme.background)
-    ){
+    ) {
         TopEndCard(modifier = Modifier.align(Alignment.TopEnd))
         BottomStartCard(modifier = Modifier.align(Alignment.BottomStart))
 
@@ -70,7 +87,7 @@ fun InitialScreen(navController: NavController){
 
             ) {
                 Text(
-                    text= stringResource(R.string.app_name),
+                    text = stringResource(R.string.app_name),
                     color = MaterialTheme.colorScheme.onSecondary,
                     style = MaterialTheme.typography.titleSmall
                 )
@@ -87,49 +104,52 @@ fun InitialScreen(navController: NavController){
 
                 Spacer(modifier = Modifier.height(60.dp))
 
-                    Button(
-                        onClick = {
-                            navController.navigate(Destination.LoginScreen.route)
-                        },
-                        colors = ButtonDefaults
-                            .buttonColors(
-                                containerColor = MaterialTheme.colorScheme.onPrimary
-                            ),
-                        shape = RoundedCornerShape(10.dp),
-                        border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.onPrimary),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                    ) {
-                        Text(
-                            text= stringResource(R.string.btn_login),
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(
-                        onClick = {
-                            navController.navigate(Destination.SignupScreen.route)
-                        },
-                        colors = ButtonDefaults
-                            .buttonColors(
-                                containerColor = Color.Transparent
-                            ),
-                        shape = RoundedCornerShape(10.dp),
-                        border = BorderStroke(
-                            width = 1.dp, color= MaterialTheme.colorScheme.onPrimary
+                Button(
+                    onClick = {
+                        navController.navigate(Destination.LoginScreen.route)
+                    },
+                    colors = ButtonDefaults
+                        .buttonColors(
+                            containerColor = MaterialTheme.colorScheme.onPrimary
                         ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                    ) {
-                        Text(
-                            text= stringResource(R.string.btn_create_account),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.btn_login),
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        navController.navigate(Destination.SignupScreen.route)
+                    },
+                    colors = ButtonDefaults
+                        .buttonColors(
+                            containerColor = Color.Transparent
+                        ),
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(
+                        width = 1.dp, color = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.btn_create_account),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
 
             }
         }
@@ -139,7 +159,7 @@ fun InitialScreen(navController: NavController){
 
 @Composable
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
-fun InitialScreenPreview(){
+fun InitialScreenPreview() {
     EcoWatssTheme() {
         InitialScreen(rememberNavController())
     }

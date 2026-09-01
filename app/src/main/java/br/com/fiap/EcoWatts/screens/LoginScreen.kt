@@ -44,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.fiap.EcoWatts.R
+import br.com.fiap.EcoWatts.components.BottomStartCard
+import br.com.fiap.EcoWatts.components.TopEndCard
 import br.com.fiap.EcoWatts.navigation.Destination
 import br.com.fiap.EcoWatts.repository.RoomUserRepository
 import br.com.fiap.EcoWatts.repository.SessionRepository

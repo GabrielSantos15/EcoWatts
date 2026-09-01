@@ -1,14 +1,15 @@
 package br.com.fiap.EcoWatts.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +24,7 @@ import br.com.fiap.EcoWatts.R
 import br.com.fiap.EcoWatts.components.ButtomAppBar
 import br.com.fiap.EcoWatts.components.DashboardSummary
 import br.com.fiap.EcoWatts.components.EcoWattsTopAppBar
+import br.com.fiap.EcoWatts.components.GradientTopBackground
 import br.com.fiap.EcoWatts.components.TipCard
 import br.com.fiap.EcoWatts.model.Appliance
 import br.com.fiap.EcoWatts.model.User
@@ -81,7 +83,8 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
                 modifier = modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 DashboardSummary(aparelhos = aparelhos, precoKwh = user.precoKwh)
@@ -89,6 +92,8 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TipCard()
+
+               Spacer(modifier = Modifier.height(50.dp))
             }
         }
 

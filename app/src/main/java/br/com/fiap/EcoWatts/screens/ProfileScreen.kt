@@ -4,17 +4,15 @@ import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
-import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Patterns
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -52,7 +50,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -64,6 +61,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.fiap.EcoWatts.R
+import br.com.fiap.EcoWatts.components.BottomStartCard
+import br.com.fiap.EcoWatts.components.TopEndCard
 import br.com.fiap.EcoWatts.model.User
 import br.com.fiap.EcoWatts.navigation.Destination
 import br.com.fiap.EcoWatts.repository.RoomUserRepository
@@ -98,6 +97,7 @@ fun ProfileScreen(navController: NavController) {
 
     Box(
         modifier = Modifier.fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.background)
     ) {
         TopEndCard(modifier = Modifier.align(Alignment.TopEnd))
         BottomStartCard(modifier = Modifier.align(Alignment.BottomStart))
@@ -167,6 +167,7 @@ fun ProfileForm(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var city by remember { mutableStateOf("") }
+    var precoKwh by remember { mutableStateOf(0.8) }
 
     var isNameError by remember { mutableStateOf(false) }
     var isEmailError by remember { mutableStateOf(false) }
@@ -190,6 +191,7 @@ fun ProfileForm(
                 email = user.email
                 password = user.password
                 city = user.city
+                precoKwh = user.precoKwh
 
                 user.userImage?.let { bytes ->
                     val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
@@ -400,6 +402,7 @@ fun ProfileForm(
                             email = email,
                             password = password,
                             city = city,
+                            precoKwh = precoKwh,
                             userImage = convertBitmapToByteArray(profileImage)
                         )
 

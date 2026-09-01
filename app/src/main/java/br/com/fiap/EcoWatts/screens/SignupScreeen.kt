@@ -1,7 +1,6 @@
 package br.com.fiap.EcoWatts.screens
 
 import android.content.res.Configuration
-import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
@@ -35,7 +34,6 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PinDrop
-import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
@@ -72,6 +70,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.fiap.EcoWatts.R
+import br.com.fiap.EcoWatts.components.BottomStartCard
+import br.com.fiap.EcoWatts.components.TopEndCard
 import br.com.fiap.EcoWatts.model.User
 import br.com.fiap.EcoWatts.navigation.Destination
 import br.com.fiap.EcoWatts.repository.RoomUserRepository
@@ -113,6 +113,7 @@ fun SignupScreen(navController: NavController) {
 
     Box(
         modifier = Modifier.fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.background)
     ) {
         TopEndCard(modifier = Modifier.align(Alignment.TopEnd))
         BottomStartCard(modifier = Modifier.align(Alignment.BottomStart))

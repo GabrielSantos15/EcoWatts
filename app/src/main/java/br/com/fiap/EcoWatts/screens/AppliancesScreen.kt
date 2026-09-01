@@ -26,6 +26,7 @@ import androidx.navigation.compose.rememberNavController
 import br.com.fiap.EcoWatts.R
 import br.com.fiap.EcoWatts.components.ButtomAppBar
 import br.com.fiap.EcoWatts.components.EcoWattsTopAppBar
+import br.com.fiap.EcoWatts.components.GradientTopBackground
 import br.com.fiap.EcoWatts.model.Appliance
 import br.com.fiap.EcoWatts.navigation.Destination
 import br.com.fiap.EcoWatts.repository.RoomApplianceRepository

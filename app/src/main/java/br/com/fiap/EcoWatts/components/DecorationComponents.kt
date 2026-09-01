@@ -1,6 +1,7 @@
-package br.com.fiap.EcoWatts.screens
+package br.com.fiap.EcoWatts.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,17 +18,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
 
 @Composable
 fun TopEndCard(modifier: Modifier = Modifier) {
+    val isDarkTheme = isSystemInDarkTheme()
+    val shapeAlpha = if (isDarkTheme) 0.25f else 1.0f
+
     Card(
         modifier = modifier
             .width(160.dp)
             .height(85.dp),
         shape = RoundedCornerShape(bottomStart = 40.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = shapeAlpha)
+        )
     ) { }
 }
 
@@ -41,12 +48,17 @@ private fun TopEndCardPreview() {
 
 @Composable
 fun BottomStartCard(modifier: Modifier = Modifier) {
+    val isDarkTheme = isSystemInDarkTheme()
+    val shapeAlpha = if (isDarkTheme) 0.25f else 1.0f
+
     Card(
         modifier = modifier
             .width(160.dp)
             .height(85.dp),
         shape = RoundedCornerShape(topEnd = 40.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = shapeAlpha)
+        )
     ) { }
 }
 
@@ -61,7 +73,7 @@ private fun BottomStartCardPreview() {
 @Composable
 fun GradientTopBackground(
     modifier: Modifier = Modifier,
-    height: androidx.compose.ui.unit.Dp = 210.dp,
+    height: Dp = 210.dp,
     content: @Composable () -> Unit
 ) {
     Box(modifier = modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)) {
