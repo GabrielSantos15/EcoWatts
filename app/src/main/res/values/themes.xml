@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.EcoBike" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.EcoWatts" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.EcoWatts.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#3B66FF</item>
+
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_ecowatts_logo</item>
+
+        <item name="postSplashScreenTheme">@style/Theme.EcoWatts</item>
+    </style>
+
 </resources>

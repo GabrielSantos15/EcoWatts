@@ -8,7 +8,7 @@ val SoftBackgroundSecondary = Color(0xFF5378FD)
 
 // CORES DO TEMA CLARO
 
-val LightPrimary = Color(0xFF3B66FF) // Roxo suave (o tom principal da sua referência)
+val LightPrimary = Color(0xFF3B66FF)
 val LightSecondary = Color(0xFF65A0FF) // Azul claro complementar
 val LightBackground = Color(0xFFF5F7FA) // Cinza gelo ultra claro (melhor que branco puro)
 val LightSurface = Color(0xFFFFFFFF) // Branco puro para os cards saltarem do fundo
