@@ -80,7 +80,63 @@
     <string name="tip_fog_title">Neblina</string>
     <string name="tip_fog_message">Dias de neblina costumam ser mais frios — atenção redobrada ao tempo de banho.</string>
 
-    <string name="tip_sunny_day_title">Dia de sol</string>
+    <string name="tip_sunny_day_title">Dia ensolarado</string>
     <string name="tip_sunny_day_message">Aproveite para secar roupas naturalmente e economizar na secadora, se tiver uma.</string>
-    <string name="dashboard">Dashboard</string>
+    <string name="dashboard">Painel</string>
+    <string name="estimated_bill">Conta Estimada</string>
+    <string name="month">Mês</string>
+    <string name="consumption">Consumo</string>
+    <string name="top_consumer">Maior Consumidor</string>
+    <string name="no_appliances_registered">Nenhum aparelho cadastrado</string>
+
+    <string name="estimated_monthly_cost">Custo mensal estimado</string>
+
+    <plurals name="appliances_registered">
+        <item quantity="one">%d aparelho cadastrado</item>
+        <item quantity="other">%d aparelhos cadastrados</item>
+    </plurals>
+
+    <string name="energy_rate_kwh">Tarifa de Energia (kWh)</string>
+    <string name="edit_rate">Editar tarifa</string>
+    <string name="edit_kwh_rate_title">Editar Tarifa do kWh</string>
+    <string name="edit_rate_description">Consulte sua conta de luz ou o site da distribuidora de energia da sua região para verificar o valor atual com impostos.</string>
+    <string name="value_in_currency">Valor em R$</string>
+    <string name="save">Salvar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="consumption_distribution">Distribuição de consumo</string>
+    <string name="items">itens</string>
+    <string name="top_consumers">Maiores consumidores</string>
+    <string name="consumption_summary">Resumo do seu consumo</string>
+
+    <string name="back">Voltar</string>
+    <string name="add_appliance_title">Cadastrar Aparelho</string>
+    <string name="add_appliance_subtitle">Informe os dados para calcular o custo mensal</string>
+    <string name="appliance_name_label">Nome do Aparelho</string>
+    <string name="power_watts_label">Potência (Watts)</string>
+    <string name="hours_per_day_label">Horas de uso por dia</string>
+    <string name="error_invalid_name">Informe um nome válido</string>
+    <string name="error_invalid_watts">Informe um valor em Watts válido</string>
+    <string name="error_invalid_hours">Informe entre 1 e 24 horas</string>
+    <string name="save_changes">Salvar Alterações</string>
+    <string name="save_appliance">Salvar Aparelho</string>
+    <string name="success_title">Sucesso</string>
+    <string name="appliance_updated_success">Aparelho atualizado com sucesso!</string>
+    <string name="appliance_created_success">Aparelho cadastrado e calculado com sucesso!</string>
+    <string name="ok">Ok</string>
+    <string name="validation_error_title">Erro de Validação</string>
+    <string name="validation_error_message">Por favor, preencha todos os campos corretamente.</string>
+    <string name="error_icon_description">Erro</string>
+
+    <string name="my_profile">Meu Perfil</string>
+    <string name="profile_subtitle">Atualize seus dados</string>
+    <string name="name_label">Nome</string>
+    <string name="city_label">Cidade</string>
+    <string name="email_label">E-mail</string>
+    <string name="password_label">Senha</string>
+    <string name="logout">Sair da conta</string>
+    <string name="data_updated_success">Dados atualizados com sucesso</string>
+    <string name="generic_error_title">Erro</string>
+    <string name="logout_confirm_message">Tem certeza que deseja sair?</string>
+    <string name="logout_confirm_action">Sair</string>
+
 </resources>

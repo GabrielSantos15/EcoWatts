@@ -1,5 +1,8 @@
 package br.com.fiap.EcoWatts.util
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import br.com.fiap.EcoWatts.R
 import br.com.fiap.EcoWatts.model.Appliance
 import java.text.NumberFormat
 import java.util.Locale
@@ -23,14 +26,16 @@ fun formatHorasDia(horasDia: Double): String {
     return "$valor $sufixo"
 }
 
+@Composable
 fun formatConsumoKwh(consumoMensalKwh: Double): String {
     val valor = if (consumoMensalKwh == consumoMensalKwh.toLong().toDouble()) {
         consumoMensalKwh.toLong().toString()
     } else {
         String.format(Locale("pt", "BR"), "%.1f", consumoMensalKwh)
     }
-    return "$valor kWh/mês"
+    return "$valor kWh/" + stringResource(R.string.month)
 }
+
 
 fun formatCurrencyBRL(valor: Double): String {
     val formatter = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))

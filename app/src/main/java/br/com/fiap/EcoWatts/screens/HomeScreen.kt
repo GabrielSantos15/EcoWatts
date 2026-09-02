@@ -92,8 +92,6 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TipCard()
-
-               Spacer(modifier = Modifier.height(50.dp))
             }
         }
 

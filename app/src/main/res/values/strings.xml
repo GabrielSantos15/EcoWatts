@@ -82,5 +82,62 @@
     <string name="tip_sunny_day_title">Sunny day</string>
     <string name="tip_sunny_day_message">Take the chance to dry clothes naturally and save on the dryer, if you have one.</string>
     <string name="dashboard">Dashboard</string>
+    <string name="estimated_bill">Estimated Bill</string>
+    <string name="month">Month</string>
+    <string name="consumption">Consumption</string>
+    <string name="top_consumer">Top Consumer</string>
+    <string name="no_appliances_registered">No appliances registered</string>
+
+
+    <string name="estimated_monthly_cost">Estimated monthly cost</string>
+
+    <plurals name="appliances_registered">
+        <item quantity="one">%d appliance registered</item>
+        <item quantity="other">%d appliances registered</item>
+    </plurals>
+
+    <string name="energy_rate_kwh">Energy rate (kWh)</string>
+    <string name="edit_rate">Edit rate</string>
+    <string name="edit_kwh_rate_title">Edit kWh rate</string>
+    <string name="edit_rate_description">Check your electricity bill or your local energy provider’s website to verify the current value including taxes.</string>
+    <string name="value_in_currency">Value in R$</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="consumption_distribution">Consumption distribution</string>
+    <string name="items">Items</string>
+    <string name="top_consumers">Top consumers</string>
+    <string name="consumption_summary">Consumption summary</string>
+
+    <string name="back">Back</string>
+    <string name="add_appliance_title">Add Appliance</string>
+    <string name="add_appliance_subtitle">Enter the details to calculate the monthly cost</string>
+    <string name="appliance_name_label">Appliance Name</string>
+    <string name="power_watts_label">Power (Watts)</string>
+    <string name="hours_per_day_label">Hours of use per day</string>
+    <string name="error_invalid_name">Enter a valid name</string>
+    <string name="error_invalid_watts">Enter a valid value in Watts</string>
+    <string name="error_invalid_hours">Enter a value between 1 and 24 hours</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="save_appliance">Save Appliance</string>
+    <string name="success_title">Success</string>
+    <string name="appliance_updated_success">Appliance updated successfully!</string>
+    <string name="appliance_created_success">Appliance registered and calculated successfully!</string>
+    <string name="ok">OK</string>
+    <string name="validation_error_title">Validation Error</string>
+    <string name="validation_error_message">Please fill in all fields correctly.</string>
+    <string name="error_icon_description">Error</string>
+    <string name="my_profile">My Profile</string>
+
+    <string name="profile_subtitle">Update your details</string>
+    <string name="name_label">Name</string>
+    <string name="city_label">City</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Password</string>
+    <string name="logout">Log out</string>
+    <string name="data_updated_success">Your details have been updated successfully</string>
+    <string name="generic_error_title">Error</string>
+    <string name="logout_confirm_message">Are you sure you want to log out?</string>
+    <string name="logout_confirm_action">Log out</string>
+
 
 </resources>

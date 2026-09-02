@@ -18,9 +18,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Lock
@@ -96,12 +98,12 @@ fun ProfileScreen(navController: NavController) {
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background)
     ) {
         TopEndCard(modifier = Modifier.align(Alignment.TopEnd))
         BottomStartCard(modifier = Modifier.align(Alignment.BottomStart))
-
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -109,6 +111,21 @@ fun ProfileScreen(navController: NavController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            IconButton(
+                onClick = { navController.popBackStack() },
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(top = 16.dp, start = 8.dp)
+
+            ) {
+                Icon(
+                    modifier = Modifier.size(24.dp),
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = stringResource(R.string.back),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
             ProfileTitle()
             Spacer(modifier = Modifier.height(48.dp))
 
@@ -138,12 +155,12 @@ fun ProfileTitle(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Meu Perfil",
+            text = stringResource(R.string.my_profile),
             color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.titleLarge
         )
         Text(
-            text = "Atualize seus dados",
+            text = stringResource(R.string.profile_subtitle),
             color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.titleSmall
         )
@@ -226,12 +243,15 @@ fun ProfileForm(
                 unfocusedBorderColor = MaterialTheme.colorScheme.primary
             ),
             label = {
-                Text(text = "Nome", style = MaterialTheme.typography.labelSmall)
+                Text(
+                    text = stringResource(R.string.name_label),
+                    style = MaterialTheme.typography.labelSmall
+                )
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Person,
-                    contentDescription = "",
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.tertiary
                 )
             },
@@ -243,7 +263,10 @@ fun ProfileForm(
             isError = isNameError,
             trailingIcon = {
                 if (isNameError) {
-                    Icon(imageVector = Icons.Default.Error, contentDescription = "")
+                    Icon(
+                        imageVector = Icons.Default.Error,
+                        contentDescription = stringResource(R.string.error_icon_description)
+                    )
                 }
             },
             supportingText = {
@@ -268,12 +291,15 @@ fun ProfileForm(
                 unfocusedBorderColor = MaterialTheme.colorScheme.primary
             ),
             label = {
-                Text(text = "Cidade", style = MaterialTheme.typography.labelSmall)
+                Text(
+                    text = stringResource(R.string.city_label),
+                    style = MaterialTheme.typography.labelSmall
+                )
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.PinDrop,
-                    contentDescription = "",
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.tertiary
                 )
             },
@@ -285,7 +311,10 @@ fun ProfileForm(
             isError = isCityError,
             trailingIcon = {
                 if (isCityError) {
-                    Icon(imageVector = Icons.Default.Error, contentDescription = "")
+                    Icon(
+                        imageVector = Icons.Default.Error,
+                        contentDescription = stringResource(R.string.error_icon_description)
+                    )
                 }
             },
             supportingText = {
@@ -310,12 +339,15 @@ fun ProfileForm(
                 unfocusedBorderColor = MaterialTheme.colorScheme.primary
             ),
             label = {
-                Text(text = "E-mail", style = MaterialTheme.typography.labelSmall)
+                Text(
+                    text = stringResource(R.string.email_label),
+                    style = MaterialTheme.typography.labelSmall
+                )
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Email,
-                    contentDescription = "",
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.tertiary
                 )
             },
@@ -326,7 +358,10 @@ fun ProfileForm(
             isError = isEmailError,
             trailingIcon = {
                 if (isEmailError) {
-                    Icon(imageVector = Icons.Default.Error, contentDescription = "")
+                    Icon(
+                        imageVector = Icons.Default.Error,
+                        contentDescription = stringResource(R.string.error_icon_description)
+                    )
                 }
             },
             supportingText = {
@@ -351,12 +386,15 @@ fun ProfileForm(
                 unfocusedBorderColor = MaterialTheme.colorScheme.primary
             ),
             label = {
-                Text(text = "Senha", style = MaterialTheme.typography.labelSmall)
+                Text(
+                    text = stringResource(R.string.password_label),
+                    style = MaterialTheme.typography.labelSmall
+                )
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Lock,
-                    contentDescription = "",
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.tertiary
                 )
             },
@@ -368,10 +406,13 @@ fun ProfileForm(
             trailingIcon = {
                 val image =
                     if (showPassword) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                val description = stringResource(
+                    if (showPassword) R.string.hide_password else R.string.show_password
+                )
                 IconButton(onClick = { showPassword = !showPassword }) {
                     Icon(
                         imageVector = image,
-                        contentDescription = "",
+                        contentDescription = description,
                         tint = MaterialTheme.colorScheme.tertiary
                     )
                 }
@@ -419,7 +460,10 @@ fun ProfileForm(
                 .height(48.dp),
             shape = RoundedCornerShape(8.dp)
         ) {
-            Text(text = "Salvar alterações", style = MaterialTheme.typography.labelMedium)
+            Text(
+                text = stringResource(R.string.save_changes),
+                style = MaterialTheme.typography.labelMedium
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -433,10 +477,13 @@ fun ProfileForm(
         ) {
             Icon(
                 imageVector = Icons.Default.Logout,
-                contentDescription = "",
+                contentDescription = null,
                 modifier = Modifier.padding(end = 8.dp)
             )
-            Text(text = "Sair da conta", style = MaterialTheme.typography.labelMedium)
+            Text(
+                text = stringResource(R.string.logout),
+                style = MaterialTheme.typography.labelMedium
+            )
         }
     }
 
@@ -444,14 +491,17 @@ fun ProfileForm(
     if (showDialogSuccess) {
         AlertDialog(
             onDismissRequest = { showDialogSuccess = false },
-            title = { Text(text = "Sucesso") },
-            text = { Text(text = "Dados atualizados com sucesso") },
+            title = { Text(text = stringResource(R.string.success_title)) },
+            text = { Text(text = stringResource(R.string.data_updated_success)) },
             confirmButton = {
                 TextButton(onClick = {
                     showDialogSuccess = false
                     navController.navigate(Destination.HomeScreen.route)
                 }) {
-                    Text(text = "Ok",style = MaterialTheme.typography.labelMedium)
+                    Text(
+                        text = stringResource(R.string.ok),
+                        style = MaterialTheme.typography.labelMedium
+                    )
                 }
             }
         )
@@ -461,13 +511,13 @@ fun ProfileForm(
     if (showDialogError) {
         AlertDialog(
             onDismissRequest = { showDialogError = false },
-            title = { Text(text = "Erro") },
-            text = { Text(text = "Preencha todos os campos corretamente") },
+            title = { Text(text = stringResource(R.string.generic_error_title)) },
+            text = { Text(text = stringResource(R.string.validation_error_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     showDialogError = false
                 }) {
-                    Text("Ok")
+                    Text(stringResource(R.string.ok))
                 }
             }
         )
@@ -477,8 +527,8 @@ fun ProfileForm(
     if (showDialogLogout) {
         AlertDialog(
             onDismissRequest = { showDialogLogout = false },
-            title = { Text(text = "Sair da conta") },
-            text = { Text(text = "Tem certeza que deseja sair?") },
+            title = { Text(text = stringResource(R.string.logout)) },
+            text = { Text(text = stringResource(R.string.logout_confirm_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -489,12 +539,19 @@ fun ProfileForm(
                         }
                     }
                 ) {
-                    Text(text = "Sair", color = MaterialTheme.colorScheme.error,style = MaterialTheme.typography.labelMedium)
+                    Text(
+                        text = stringResource(R.string.logout_confirm_action),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.labelMedium
+                    )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDialogLogout = false }) {
-                    Text(text = "Cancelar",style = MaterialTheme.typography.labelMedium)
+                    Text(
+                        text = stringResource(R.string.cancel),
+                        style = MaterialTheme.typography.labelMedium
+                    )
                 }
             }
         )

@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,9 +24,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.modifier.modifierLocalOf
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import br.com.fiap.EcoWatts.R
 import br.com.fiap.EcoWatts.model.Appliance
 import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
 import br.com.fiap.EcoWatts.util.formatConsumoKwh
@@ -92,18 +97,29 @@ private fun EstimatedBillCard(valor: Double) {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "CONTA ESTIMADA",
-                    style = MaterialTheme.typography.labelMedium,
+                    text = stringResource(R.string.estimated_bill),
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "${formatCurrencyBRL(valor)} / mês",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimary
-            )
+            Row {
+                Text(
+                    text = "${formatCurrencyBRL(valor)}",
+                    modifier = Modifier.alignByBaseline(),
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+                Text(
+                    text = " / " + stringResource(R.string.month),
+                    modifier = Modifier.alignByBaseline(),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
         }
     }
 }
@@ -124,7 +140,7 @@ private fun TotalConsumptionCard(consumoKwh: Double, modifier: Modifier = Modifi
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "CONSUMO",
+                text = stringResource(R.string.consumption),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
@@ -132,7 +148,7 @@ private fun TotalConsumptionCard(consumoKwh: Double, modifier: Modifier = Modifi
             Text(
                 text = formatConsumoKwh(consumoKwh),
                 style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
@@ -155,7 +171,7 @@ private fun ApplianceCountCard(quantidade: Int, modifier: Modifier = Modifier) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "APARELHOS",
+                text = stringResource(R.string.appliances),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
@@ -163,7 +179,7 @@ private fun ApplianceCountCard(quantidade: Int, modifier: Modifier = Modifier) {
             Text(
                 text = quantidade.toString(),
                 style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
@@ -185,6 +201,7 @@ private fun TopConsumerCard(aparelho: Appliance?, precoKwh: Double) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
+                modifier = Modifier.size(22.dp),
                 imageVector = Icons.Default.EmojiEvents,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.error
@@ -192,7 +209,7 @@ private fun TopConsumerCard(aparelho: Appliance?, precoKwh: Double) {
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text(
-                    text = "MAIOR CONSUMIDOR",
+                    text = stringResource(R.string.top_consumer),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
@@ -200,8 +217,8 @@ private fun TopConsumerCard(aparelho: Appliance?, precoKwh: Double) {
                 if (aparelho != null) {
                     Text(
                         text = aparelho.name,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
@@ -211,7 +228,7 @@ private fun TopConsumerCard(aparelho: Appliance?, precoKwh: Double) {
                     )
                 } else {
                     Text(
-                        text = "Nenhum aparelho cadastrado",
+                        text = stringResource(R.string.no_appliances_registered),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )

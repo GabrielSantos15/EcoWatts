@@ -38,9 +38,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import br.com.fiap.EcoWatts.R
 import br.com.fiap.EcoWatts.model.Appliance
 import br.com.fiap.EcoWatts.util.formatCurrencyBRL
 import br.com.fiap.EcoWatts.util.getMonthlyCost
@@ -64,7 +67,7 @@ fun TotalCostHeroCard(
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Text(
-                text = "Custo mensal estimado",
+                text = stringResource(R.string.estimated_monthly_cost),
                 color = Color.White.copy(alpha = 0.85f),
                 style = MaterialTheme.typography.bodyMedium
             )
@@ -85,7 +88,11 @@ fun TotalCostHeroCard(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "$applianceCount aparelho${if (applianceCount != 1) "s" else ""} cadastrado${if (applianceCount != 1) "s" else ""}",
+                    text = pluralStringResource(
+                        R.plurals.appliances_registered,
+                        applianceCount,
+                        applianceCount
+                    ),
                     color = Color.White.copy(alpha = 0.85f),
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -119,7 +126,7 @@ fun KwhPriceEditor(
         ) {
             Column {
                 Text(
-                    text = "Tarifa de Energia (kWh)",
+                    text = stringResource(R.string.energy_rate_kwh),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
@@ -132,7 +139,7 @@ fun KwhPriceEditor(
             }
             Icon(
                 imageVector = Icons.Default.Edit,
-                contentDescription = "Editar tarifa",
+                contentDescription = stringResource(R.string.edit_rate),
                 tint = MaterialTheme.colorScheme.onSecondaryContainer
             )
         }
@@ -141,11 +148,11 @@ fun KwhPriceEditor(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Editar Tarifa do kWh") },
+            title = { Text(stringResource(R.string.edit_kwh_rate_title)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     Text(
-                        text = "Consulte sua conta de luz ou o site da distribuidora de energia da sua região para verificar o valor atual com impostos.",
+                        text = stringResource(R.string.edit_rate_description),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -153,7 +160,7 @@ fun KwhPriceEditor(
                     OutlinedTextField(
                         value = priceInput,
                         onValueChange = { priceInput = it },
-                        label = { Text("Valor em R$") },
+                        label = { Text(stringResource(R.string.value_in_currency)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
@@ -169,10 +176,10 @@ fun KwhPriceEditor(
                         }
                         showDialog = false
                     }
-                ) { Text("Salvar") }
+                ) { Text(stringResource(R.string.save)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDialog = false }) { Text("Cancelar") }
+                TextButton(onClick = { showDialog = false }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -196,7 +203,7 @@ fun ConsumptionDonutChart(
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Text(
-                text = "Distribuição de consumo",
+                text = stringResource(R.string.consumption_distribution),
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurface
@@ -233,7 +240,7 @@ fun ConsumptionDonutChart(
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.headlineSmall
                         )
-                        Text(text = "itens", style = MaterialTheme.typography.bodySmall)
+                        Text(text = stringResource(R.string.items), style = MaterialTheme.typography.bodySmall)
                     }
                 }
 
@@ -300,7 +307,7 @@ fun ApplianceRankingCard(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Maiores consumidores",
+                    text = stringResource(R.string.top_consumers),
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.labelLarge
                 )

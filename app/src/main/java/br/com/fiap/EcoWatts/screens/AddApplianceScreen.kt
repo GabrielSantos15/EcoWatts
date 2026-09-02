@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Schedule
@@ -21,6 +23,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -36,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -44,6 +48,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import br.com.fiap.EcoWatts.R
+import br.com.fiap.EcoWatts.components.BottomStartCard
+import br.com.fiap.EcoWatts.components.TopEndCard
 import br.com.fiap.EcoWatts.model.Appliance
 import br.com.fiap.EcoWatts.navigation.Destination
 import br.com.fiap.EcoWatts.repository.RoomApplianceRepository
@@ -85,232 +92,279 @@ fun AddApplianceScreen(navController: NavController, applianceId: Int? = null) {
                 potencia = if (appliance.powerWatts % 1.0 == 0.0)
                     appliance.powerWatts.toLong().toString() else appliance.powerWatts.toString()
                 horasPorDia = if (appliance.hoursOfUsePerDay % 1.0 == 0.0)
-                    appliance.hoursOfUsePerDay.toLong().toString() else appliance.hoursOfUsePerDay.toString()
+                    appliance.hoursOfUsePerDay.toLong()
+                        .toString() else appliance.hoursOfUsePerDay.toString()
             }
         }
     }
     fun validate(): Boolean {
         isNomeError = nome.isBlank()
-        isPotenciaError = potencia.toDoubleOrNull() == null || (potencia.toDoubleOrNull() ?: 0.0) <= 0.0
-        isHorasError = horasPorDia.toDoubleOrNull() == null || (horasPorDia.toDoubleOrNull() ?: 0.0) <= 0.0 || (horasPorDia.toDoubleOrNull() ?: 0.0) > 24.0
+        isPotenciaError =
+            potencia.toDoubleOrNull() == null || (potencia.toDoubleOrNull() ?: 0.0) <= 0.0
+        isHorasError = horasPorDia.toDoubleOrNull() == null || (horasPorDia.toDoubleOrNull()
+            ?: 0.0) <= 0.0 || (horasPorDia.toDoubleOrNull() ?: 0.0) > 24.0
         return !isNomeError && !isPotenciaError && !isHorasError
     }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        TopEndCard(modifier = Modifier.align(Alignment.TopEnd))
+        BottomStartCard(modifier = Modifier.align(Alignment.BottomStart))
 
-    Scaffold(
-        bottomBar = {
-//            BottomAppBar(navController = navController, rotaAtual = "tela_adicionar")
-        }
-    ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+                .fillMaxWidth()
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
+
+            IconButton(
+                onClick = { navController.popBackStack() },
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(top = 16.dp, start = 8.dp)
+
+            ) {
+                Icon(
+                    modifier = Modifier.size(24.dp),
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = stringResource(R.string.back),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(90.dp))
+
+            Text(
+                text = stringResource(R.string.add_appliance_title),
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleLarge,
+                textAlign = TextAlign.Left
+            )
+            Text(
+                text = stringResource(R.string.add_appliance_subtitle),
+                color = MaterialTheme.colorScheme.secondary,
+                style = MaterialTheme.typography.titleSmall,
+                textAlign = TextAlign.Left
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Campo Nome do Aparelho
+            OutlinedTextField(
+                value = nome,
+                onValueChange = { nome = it },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                ),
+                label = {
+                    Text(
+                        text = stringResource(R.string.appliance_name_label),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Devices,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.tertiary
+                    )
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Next
+                ),
+                isError = isNomeError,
+                trailingIcon = {
+                    if (isNomeError) {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = stringResource(R.string.error_icon_description)
+                        )
+                    }
+                },
+                supportingText = {
+                    if (isNomeError) {
+                        Text(
+                            text = stringResource(R.string.error_invalid_name),
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.End,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Campo Potência (Watts)
+            OutlinedTextField(
+                value = potencia,
+                onValueChange = { potencia = it },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                ),
+                label = {
+                    Text(
+                        text = stringResource(R.string.power_watts_label),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Bolt,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.tertiary
+                    )
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next
+                ),
+                isError = isPotenciaError,
+                trailingIcon = {
+                    if (isPotenciaError) {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = stringResource(R.string.error_icon_description)
+                        )
+                    }
+                },
+                supportingText = {
+                    if (isPotenciaError) {
+                        Text(
+                            text = stringResource(R.string.error_invalid_watts),
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.End,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Campo Horas de uso por dia
+            OutlinedTextField(
+                value = horasPorDia,
+                onValueChange = { horasPorDia = it },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
+                ),
+                label = {
+                    Text(
+                        text = stringResource(R.string.hours_per_day_label),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Schedule,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.tertiary
+                    )
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+                isError = isHorasError,
+                trailingIcon = {
+                    if (isHorasError) {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = stringResource(R.string.error_icon_description)
+                        )
+                    }
+                },
+                supportingText = {
+                    if (isHorasError) {
+                        Text(
+                            text = stringResource(R.string.error_invalid_hours),
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.End,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = {
+                    if (validate()) {
+                        val userId = if (emEdicao) userIdOriginal else sessionRepository.getUserId()
+                        val user = userRepository.getUser(userId)
+
+                        val w = potencia.toDouble()
+                        val h = horasPorDia.toDouble()
+
+                        coroutineScope.launch {
+                            if (emEdicao) {
+                                applianceRepository.update(
+                                    Appliance(
+                                        id = idOriginal,
+                                        name = nome,
+                                        powerWatts = w,
+                                        hoursOfUsePerDay = h,
+                                        userId = userId
+                                    )
+                                )
+                            } else {
+                                applianceRepository.insert(
+                                    Appliance(
+                                        name = nome,
+                                        powerWatts = w,
+                                        hoursOfUsePerDay = h,
+                                        userId = userId
+                                    )
+                                )
+                            }
+                            showDialogSuccess = true
+                        }
+                    } else {
+                        showDialogError = true
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(32.dp)
-                    .align(Alignment.Center),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .height(48.dp),
+                shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    text = "Cadastrar Aparelho",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.titleLarge
+                    text = stringResource(if (emEdicao) R.string.save_changes else R.string.save_appliance),
+                    style = MaterialTheme.typography.labelMedium
                 )
-                Text(
-                    text = "Informe os dados para calcular o custo mensal",
-                    color = MaterialTheme.colorScheme.secondary,
-                    style = MaterialTheme.typography.titleSmall,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // Campo Nome do Aparelho
-                OutlinedTextField(
-                    value = nome,
-                    onValueChange = { nome = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                    ),
-                    label = { Text(text = "Nome do Aparelho", style = MaterialTheme.typography.labelSmall) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Devices,
-                            contentDescription = "",
-                            tint = MaterialTheme.colorScheme.tertiary
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        capitalization = KeyboardCapitalization.Words,
-                        imeAction = ImeAction.Next
-                    ),
-                    isError = isNomeError,
-                    trailingIcon = {
-                        if (isNomeError) {
-                            Icon(imageVector = Icons.Default.Error, contentDescription = "")
-                        }
-                    },
-                    supportingText = {
-                        if (isNomeError) {
-                            Text(
-                                text = "Informe um nome válido",
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.End,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Campo Potência (Watts)
-                OutlinedTextField(
-                    value = potencia,
-                    onValueChange = { potencia = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                    ),
-                    label = { Text(text = "Potência (Watts)", style = MaterialTheme.typography.labelSmall) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Bolt,
-                            contentDescription = "",
-                            tint = MaterialTheme.colorScheme.tertiary
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Next
-                    ),
-                    isError = isPotenciaError,
-                    trailingIcon = {
-                        if (isPotenciaError) {
-                            Icon(imageVector = Icons.Default.Error, contentDescription = "")
-                        }
-                    },
-                    supportingText = {
-                        if (isPotenciaError) {
-                            Text(
-                                text = "Informe um valor em Watts válido",
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.End,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Campo Horas de uso por dia
-                OutlinedTextField(
-                    value = horasPorDia,
-                    onValueChange = { horasPorDia = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                    ),
-                    label = { Text(text = "Horas de uso por dia", style = MaterialTheme.typography.labelSmall) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Schedule,
-                            contentDescription = "",
-                            tint = MaterialTheme.colorScheme.tertiary
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Done
-                    ),
-                    isError = isHorasError,
-                    trailingIcon = {
-                        if (isHorasError) {
-                            Icon(imageVector = Icons.Default.Error, contentDescription = "")
-                        }
-                    },
-                    supportingText = {
-                        if (isHorasError) {
-                            Text(
-                                text = "Informe entre 1 e 24 horas",
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.End,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Button(
-                    onClick = {
-                        if (validate()) {
-                            val userId = if (emEdicao) userIdOriginal else sessionRepository.getUserId()
-                            val user = userRepository.getUser(userId)
-
-                            val w = potencia.toDouble()
-                            val h = horasPorDia.toDouble()
-
-                            coroutineScope.launch {
-                                if (emEdicao) {
-                                    applianceRepository.update(
-                                        Appliance(
-                                            id = idOriginal,
-                                            name = nome,
-                                            powerWatts = w,
-                                            hoursOfUsePerDay = h,
-                                            userId = userId
-                                        )
-                                    )
-                                } else {
-                                    applianceRepository.insert(
-                                        Appliance(
-                                            name = nome,
-                                            powerWatts = w,
-                                            hoursOfUsePerDay = h,
-                                            userId = userId
-                                        )
-                                    )
-                                }
-                                showDialogSuccess = true
-                            }
-                        } else {
-                            showDialogError = true
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = if (emEdicao) "Salvar Alterações" else "Salvar Aparelho",
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                }
             }
         }
     }
+
 
     // Dialogo de Sucesso
     if (showDialogSuccess) {
         AlertDialog(
             onDismissRequest = { showDialogSuccess = false },
-            title = { Text(text = "Sucesso") },
-            text = { Text(text = if (emEdicao) "Aparelho atualizado com sucesso!" else "Aparelho cadastrado e calculado com sucesso!") },
+            title = { Text(text = stringResource(R.string.success_title)) },
+            text = {
+                Text(
+                    text = stringResource(
+                        if (emEdicao) R.string.appliance_updated_success
+                        else R.string.appliance_created_success
+                    )
+                )
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -320,7 +374,7 @@ fun AddApplianceScreen(navController: NavController, applianceId: Int? = null) {
                         }
                     }
                 ) {
-                    Text(text = "Ok")
+                    Text(text = stringResource(R.string.ok))
                 }
             }
         )
@@ -330,13 +384,13 @@ fun AddApplianceScreen(navController: NavController, applianceId: Int? = null) {
     if (showDialogError) {
         AlertDialog(
             onDismissRequest = { showDialogError = false },
-            title = { Text(text = "Erro de Validação") },
-            text = { Text(text = "Por favor, preencha todos os campos corretamente.") },
+            title = { Text(text = stringResource(R.string.validation_error_title)) },
+            text = { Text(text = stringResource(R.string.validation_error_message)) },
             confirmButton = {
                 TextButton(
                     onClick = { showDialogError = false }
                 ) {
-                    Text("Ok")
+                    Text(stringResource(R.string.ok))
                 }
             }
         )
