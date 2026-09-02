@@ -139,4 +139,5 @@
     <string name="logout_confirm_message">Tem certeza que deseja sair?</string>
     <string name="logout_confirm_action">Sair</string>
 
+    <string name="account_created_success">Conta criada com sucesso</string>
 </resources>

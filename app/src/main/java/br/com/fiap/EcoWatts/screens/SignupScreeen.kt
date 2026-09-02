@@ -22,11 +22,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Error
@@ -49,10 +54,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -77,6 +84,7 @@ import br.com.fiap.EcoWatts.navigation.Destination
 import br.com.fiap.EcoWatts.repository.RoomUserRepository
 import br.com.fiap.EcoWatts.ui.theme.EcoWatssTheme
 import br.com.fiap.EcoWatts.util.convertBitmapToByteArray
+import kotlinx.coroutines.launch
 
 @Composable
 fun SignupScreen(navController: NavController) {
@@ -88,19 +96,17 @@ fun SignupScreen(navController: NavController) {
             context.resources, R.drawable.default_avatar
         )
     }
-    // Armazenar a imagem de profile
     var profileImage by remember {
         mutableStateOf<Bitmap>(placeholderImage)
     }
 
-    // função de abrir a galeria de imagens
     val launchImage = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         if (Build.VERSION.SDK_INT < 28) {
             profileImage = MediaStore.Images.Media.getBitmap(
-                    context.contentResolver, uri
-                )
+                context.contentResolver, uri
+            )
         } else {
             if (uri != null) {
                 val source = ImageDecoder.createSource(context.contentResolver, uri)
@@ -112,7 +118,8 @@ fun SignupScreen(navController: NavController) {
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background)
     ) {
         TopEndCard(modifier = Modifier.align(Alignment.TopEnd))
@@ -120,8 +127,10 @@ fun SignupScreen(navController: NavController) {
 
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.Center),
+                .fillMaxSize()
+                .align(Alignment.Center)
+                .verticalScroll(rememberScrollState())
+                .imePadding(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -132,6 +141,7 @@ fun SignupScreen(navController: NavController) {
                 profileImage = profileImage, launchImage = launchImage
             )
             SignupUserForm(navController, profileImage)
+
         }
     }
 }
@@ -230,30 +240,16 @@ fun SignupUserForm(
     navController: NavController, profileImage: Bitmap
 ) {
 
-    var name by remember {
-        mutableStateOf("")
-    }
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var city by remember { mutableStateOf("") }
 
-    var email by remember {
-        mutableStateOf("")
-    }
-
-    var password by remember {
-        mutableStateOf("")
-    }
-
-    var city by remember {
-        mutableStateOf("")
-    }
-
-    // verifica dados
     var isNameError by remember { mutableStateOf(false) }
     var isEmailError by remember { mutableStateOf(false) }
     var isCityError by remember { mutableStateOf(false) }
     var isPasswordError by remember { mutableStateOf(false) }
 
-
-    // Estado de erro
     var showDialogError by remember { mutableStateOf(false) }
     var showDialogSucess by remember { mutableStateOf(false) }
 
@@ -265,11 +261,17 @@ fun SignupUserForm(
         return !isNameError && !isEmailError && !isPasswordError
     }
 
-    var showPassword = remember {
-        mutableStateOf(false)
-    }
+    var showPassword = remember { mutableStateOf(false) }
 
     val userRepository = RoomUserRepository(LocalContext.current)
+
+    // Cada campo tem seu próprio "requester": quando ele recebe foco,
+    // pedimos pro Column rolar até ele ficar visível acima do teclado.
+    val scope = rememberCoroutineScope()
+    val nameRequester = remember { BringIntoViewRequester() }
+    val cityRequester = remember { BringIntoViewRequester() }
+    val emailRequester = remember { BringIntoViewRequester() }
+    val passwordRequester = remember { BringIntoViewRequester() }
 
     Column(
         modifier = Modifier
@@ -280,15 +282,18 @@ fun SignupUserForm(
 
         OutlinedTextField(
             value = name,
-            onValueChange = {
-                name = it
-            },
-            modifier = Modifier.fillMaxWidth(),
+            onValueChange = { name = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .bringIntoViewRequester(nameRequester)
+                .onFocusEvent {
+                    if (it.isFocused) scope.launch { nameRequester.bringIntoView() }
+                },
             shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                ),
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.primary
+            ),
             label = {
                 Text(
                     text = stringResource(R.string.your_name),
@@ -298,7 +303,7 @@ fun SignupUserForm(
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Person,
-                    contentDescription = "",
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.tertiary
                 )
             },
@@ -310,7 +315,10 @@ fun SignupUserForm(
             isError = isNameError,
             trailingIcon = {
                 if (isNameError) {
-                    Icon(imageVector = Icons.Default.Error, contentDescription = "")
+                    Icon(
+                        imageVector = Icons.Default.Error,
+                        contentDescription = stringResource(R.string.error_icon_description)
+                    )
                 }
             },
             supportingText = {
@@ -326,15 +334,18 @@ fun SignupUserForm(
 
         OutlinedTextField(
             value = city,
-            onValueChange = {
-                city = it
-            },
-            modifier = Modifier.fillMaxWidth(),
+            onValueChange = { city = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .bringIntoViewRequester(cityRequester)
+                .onFocusEvent {
+                    if (it.isFocused) scope.launch { cityRequester.bringIntoView() }
+                },
             shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                ),
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.primary
+            ),
             label = {
                 Text(
                     text = stringResource(R.string.your_city),
@@ -344,7 +355,7 @@ fun SignupUserForm(
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.PinDrop,
-                    contentDescription = "",
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.tertiary
                 )
             },
@@ -356,7 +367,10 @@ fun SignupUserForm(
             isError = isCityError,
             trailingIcon = {
                 if (isCityError) {
-                    Icon(imageVector = Icons.Default.Error, contentDescription = "")
+                    Icon(
+                        imageVector = Icons.Default.Error,
+                        contentDescription = stringResource(R.string.error_icon_description)
+                    )
                 }
             },
             supportingText = {
@@ -372,15 +386,18 @@ fun SignupUserForm(
 
         OutlinedTextField(
             value = email,
-            onValueChange = {
-                email = it
-            },
-            modifier = Modifier.fillMaxWidth(),
+            onValueChange = { email = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .bringIntoViewRequester(emailRequester)
+                .onFocusEvent {
+                    if (it.isFocused) scope.launch { emailRequester.bringIntoView() }
+                },
             shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                ),
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.primary
+            ),
             label = {
                 Text(
                     text = stringResource(R.string.your_email),
@@ -390,7 +407,7 @@ fun SignupUserForm(
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Email,
-                    contentDescription = "",
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.tertiary
                 )
             },
@@ -400,7 +417,10 @@ fun SignupUserForm(
             isError = isEmailError,
             trailingIcon = {
                 if (isEmailError) {
-                    Icon(imageVector = Icons.Default.Error, contentDescription = "")
+                    Icon(
+                        imageVector = Icons.Default.Error,
+                        contentDescription = stringResource(R.string.error_icon_description)
+                    )
                 }
             },
             supportingText = {
@@ -416,15 +436,18 @@ fun SignupUserForm(
 
         OutlinedTextField(
             value = password,
-            onValueChange = {
-                password = it
-            },
-            modifier = Modifier.fillMaxWidth(),
+            onValueChange = { password = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .bringIntoViewRequester(passwordRequester)
+                .onFocusEvent {
+                    if (it.isFocused) scope.launch { passwordRequester.bringIntoView() }
+                },
             shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
-                ),
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.primary
+            ),
             label = {
                 Text(
                     text = stringResource(R.string.your_password),
@@ -434,7 +457,7 @@ fun SignupUserForm(
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Lock,
-                    contentDescription = stringResource(R.string.password_icon),
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.tertiary
                 )
             },
@@ -448,11 +471,14 @@ fun SignupUserForm(
                 } else {
                     Icons.Default.VisibilityOff
                 }
+                val description = stringResource(
+                    if (showPassword.value) R.string.hide_password else R.string.show_password
+                )
                 IconButton(
                     onClick = { showPassword.value = !showPassword.value }) {
                     Icon(
                         imageVector = image,
-                        contentDescription = "",
+                        contentDescription = description,
                         tint = MaterialTheme.colorScheme.tertiary
                     )
                 }
@@ -522,32 +548,32 @@ fun SignupUserForm(
 
     // sucesso
     if (showDialogSucess) {
-        AlertDialog(onDismissRequest = { showDialogError = false }, title = {
-            Text(text = "Success")
+        AlertDialog(onDismissRequest = { showDialogSucess = false }, title = {
+            Text(text = stringResource(R.string.success_title))
         }, text = {
-            Text(text = "Conta criada com sucesso")
+            Text(text = stringResource(R.string.account_created_success))
         }, confirmButton = {
             TextButton(
                 onClick = {
-                       showDialogSucess = false
-                        navController.navigate(Destination.LoginScreen.route)
+                    showDialogSucess = false
+                    navController.navigate(Destination.LoginScreen.route)
                 }) {
-                Text(text = "Ok")
+                Text(text = stringResource(R.string.ok))
             }
         })
     }
-    //erro
+    // erro
     if (showDialogError) {
         AlertDialog(onDismissRequest = { showDialogError = false }, title = {
-            Text(text = "Error")
+            Text(text = stringResource(R.string.generic_error_title))
         }, text = {
-            Text(text = "Please fill in all fields correctly")
+            Text(text = stringResource(R.string.validation_error_message))
         }, confirmButton = {
             TextButton(
                 onClick = {
                     showDialogError = false
                 }) {
-                Text("Ok")
+                Text(stringResource(R.string.ok))
             }
         }
 

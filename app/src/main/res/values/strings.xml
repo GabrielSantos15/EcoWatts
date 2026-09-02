@@ -139,5 +139,6 @@
     <string name="logout_confirm_message">Are you sure you want to log out?</string>
     <string name="logout_confirm_action">Log out</string>
 
+    <string name="account_created_success">Account created successfully</string>
 
 </resources>
